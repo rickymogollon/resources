@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Master Aged Mortgage Script — [Your Name]</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1e1e1e;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --border2: #383838;
+    --text: #f5f5f5;
+    --text-dim: #b0b0b0;
+    --text-muted: #666;
+    --agent: #ffffff;
+    --purple: #c9aaff;
+    --red: #ff5555;
+    --blue: #7ab3ff;
+    --gray: #999;
+    --orange: #f5a623;
+    --green: #3dd68c;
+    --tab-active: #2a2a2a;
+    --tab-hover: #222;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #0a0a0a;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 48px;
+    gap: 12px;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .mode-toggle {
+    display: flex;
+    background: var(--border);
+    border-radius: 6px;
+    padding: 2px;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .mode-btn {
+    padding: 4px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .mode-btn.active { background: var(--surface2); color: var(--text); }
+
+  /* ─── TAB NAV ─── */
+  .tabnav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tabnav::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    padding: 6px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .tab-btn:hover { background: var(--tab-hover); color: var(--text-dim); }
+  .tab-btn.active { background: var(--tab-active); color: var(--text); border: 1px solid var(--border2); }
+
+  /* ─── CONTENT ─── */
+  .content { max-width: 820px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  body.study-mode .tab-panel { display: block !important; }
+  body.study-mode .tab-panel + .tab-panel {
+    border-top: 2px solid var(--border);
+    padding-top: 48px;
+    margin-top: 48px;
+  }
+
+  /* ─── PHASE HEADER ─── */
+  .phase-header { margin-bottom: 28px; }
+
+  .phase-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .phase-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .phase-rule {
+    font-size: 13px;
+    color: #b0b0b0;
+    line-height: 1.6;
+    border-left: 3px solid var(--border2);
+    padding-left: 12px;
+    margin-top: 10px;
+  }
+
+  /* ─── SECTION ─── */
+  .section { margin-bottom: 32px; }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ─── SCRIPT LINES ─── */
+  .line { margin-bottom: 12px; line-height: 1.85; }
+  .agent { font-weight: 600; color: var(--agent); font-size: 15px; }
+  .client { color: var(--purple); font-style: italic; font-size: 15px; }
+  .direction { color: var(--gray); font-style: italic; font-size: 13px; line-height: 1.6; }
+  .value { color: var(--blue); font-weight: 600; }
+  .objection { color: var(--red); font-weight: 600; }
+  .route {
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .route::before { content: '→'; }
+
+  /* ─── SCRIPT BLOCK ─── */
+  .script-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 26px;
+    margin-bottom: 16px;
+  }
+
+  .script-block-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* ─── BRANCH ─── */
+  .branch {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--orange);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin: 12px 0;
+  }
+
+  .branch-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--orange);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* ─── INFO / WARN BOXES ─── */
+  .info-box {
+    background: rgba(91,156,246,0.07);
+    border: 1px solid rgba(91,156,246,0.2);
+    border-left: 3px solid var(--blue);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    font-size: 13.5px;
+    color: #b8d4ff;
+    line-height: 1.7;
+  }
+
+  .info-box strong {
+    color: var(--blue);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .warn-box {
+    background: rgba(255,85,85,0.06);
+    border: 1px solid rgba(255,85,85,0.18);
+    border-left: 3px solid var(--red);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    font-size: 13.5px;
+    color: #ffaaaa;
+    line-height: 1.7;
+  }
+
+  .warn-box strong {
+    color: var(--red);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Framework upgrade box */
+  .framework-box {
+    background: rgba(61,214,140,0.06);
+    border: 1px solid rgba(61,214,140,0.22);
+    border-left: 3px solid var(--green);
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    font-size: 13.5px;
+    color: #a8f0ce;
+    line-height: 1.7;
+  }
+
+  .framework-box strong {
+    color: var(--green);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ─── OBJECTION TABLE ─── */
+  .obj-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .obj-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+
+  .obj-table th {
+    background: var(--surface2);
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .obj-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  .obj-table tr:last-child td { border-bottom: none; }
+  .obj-table tr:hover td { background: var(--surface); }
+
+  .obj-table td:first-child {
+    color: var(--red);
+    font-weight: 600;
+    white-space: nowrap;
+    font-size: 12px;
+    min-width: 160px;
+  }
+
+  .obj-table td:not(:first-child) { color: var(--text-dim); font-size: 12.5px; }
+
+  /* ─── CHECKLIST ─── */
+  .checklist { list-style: none; margin: 0; padding: 0; }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+
+  .checklist li::before {
+    content: '✔';
+    color: var(--green);
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  /* ─── CHEAT SHEET ─── */
+  .cheat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 600px) { .cheat-grid { grid-template-columns: 1fr; } }
+
+  .cheat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+
+  .cheat-card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cheat-card p, .cheat-card li { font-size: 12.5px; line-height: 1.7; color: var(--text-dim); margin-bottom: 4px; }
+  .cheat-card .agent { font-size: 13px; }
+  .cheat-card-full { grid-column: 1 / -1; }
+
+  /* ─── DIVIDER ─── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  /* ─── ROUTE STRIP ─── */
+  .route-strip {
+    background: rgba(245,166,35,0.06);
+    border: 1px solid rgba(245,166,35,0.2);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* ─── TONE BADGE ─── */
+  .tone {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    margin-right: 6px;
+    margin-bottom: 2px;
+  }
+
+  .tone-calm { background: rgba(61,214,140,0.1); color: var(--green); }
+  .tone-warm { background: rgba(184,153,240,0.12); color: var(--purple); }
+  .tone-assertive { background: rgba(255,85,85,0.1); color: var(--red); }
+  .tone-slow { background: rgba(91,156,246,0.1); color: var(--blue); }
+
+  /* ─── STEP ─── */
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 50%;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step { display: flex; gap: 12px; margin-bottom: 18px; }
+  .step-content { flex: 1; }
+  .step-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; color: var(--text); }
+
+  /* ─── ACTIVITY BAR ─── */
+  .activity-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .activity-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .activity-pill span { color: var(--green); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="logo">Omerta // Aged MP v2</span>
+    <div class="mode-toggle">
+      <button class="mode-btn active" onclick="setMode('call')">Call Mode</button>
+      <button class="mode-btn" onclick="setMode('study')">Study Mode</button>
+    </div>
+  </div>
+  <nav class="tabnav" id="tabnav">
+    <button class="tab-btn active" onclick="showTab('hook')">① Hook</button>
+    <button class="tab-btn" onclick="showTab('intro')">② Intro</button>
+    <button class="tab-btn" onclick="showTab('inventory')">③ Inventory</button>
+    <button class="tab-btn" onclick="showTab('why')">④ Build Why</button>
+    <button class="tab-btn" onclick="showTab('options')">⑤ Options</button>
+    <button class="tab-btn" onclick="showTab('objections')">⑥ Objections</button>
+    <button class="tab-btn" onclick="showTab('application')">⑦ Application</button>
+    <button class="tab-btn" onclick="showTab('close')">⑧ Close</button>
+    <button class="tab-btn" onclick="showTab('referrals')">⑨ Referrals</button>
+    <button class="tab-btn" onclick="showTab('appt')">⑩ Appt Fallback</button>
+    <button class="tab-btn" onclick="showTab('cheatsheet')">⚡ Cheat Sheet</button>
+  </nav>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════════════════════════════════════ TAB 1: HOOK -->
+<div class="tab-panel active" id="tab-hook">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Phase 1 · Aged Mortgage</div>
+    <div class="phase-title">Hook</div>
+    <div class="phase-rule">You manage the brokerage. You are the authority. Act like it from the first word.</div>
+  </div>
+
+  <div class="framework-box">
+    <strong>🎯 Framework — Tonality — Hook Phase</strong>
+    <strong style="color:var(--green);font-size:12px;margin-top:6px;display:block">Opener:</strong> <span style="color:#8fefca">Calm + Warm. 110% volume, 70% speed. Smile while you dial — it comes through the phone. You are a busy expert doing a courtesy call.</span><br>
+    <strong style="color:var(--red);font-size:12px;margin-top:6px;display:block">Not Interested:</strong> <span style="color:#ffbbbb">Slightly assertive, mildly confused — like you're surprised they'd push back on something this obvious. Never defensive. Never apologetic.</span><br>
+    <strong style="color:var(--blue);font-size:12px;margin-top:6px;display:block">Already Has Coverage:</strong> <span style="color:#a0c4ff">Administrative and warm. You expected this. It's exactly why you called.</span>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Standard Opener</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"[Client Name]?"</span></div>
+      <div class="line direction">(Wait for them to respond.)</div>
+      <div class="line"><span class="agent">"It's [Your Name]. I manage the brokerage that handles all of the mortgage protection files for [Lender — if lead under 1 year / County — if over 1 year]. Your file associated with your property on [Street Name] just came across my desk."</span></div>
+      <div class="line direction">(Pause. Let that land.)</div>
+      <div class="line"><span class="agent">"You still reside there?"</span></div>
+      <div class="line direction">(Statement, not a question. Pause and wait.)</div>
+      <div class="line"><span class="client">"Yes."</span></div>
+      <div class="line"><span class="agent">"Perfect. So you probably remember — we sent you some things in the mail regarding the mortgage protection. This would be the coverage that pays off or down your loan if you get sick, become disabled, or pass away."</span></div>
+      <div class="line"><span class="agent">"Now — one of my underwriters should've reached out to you already and helped you get this set up. But I'm not seeing any notes here on your file."</span></div>
+      <div class="line"><span class="agent">"So as the manager I'm doing a courtesy call — do you remember what happened with the mortgage protection?"</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Branch: No One Helped Them Yet <span class="tone tone-calm">ONE-CALL CLOSE</span></div>
+    <div class="branch">
+      <div class="branch-label">→ If no one has helped them</div>
+      <div class="line"><span class="agent">"Is it just you in the home, or is there a significant other or spouse there with you?"</span></div>
+      <div class="line direction">(If spouse is present — close now. If not — confirm when both are home and book within 24 hours. Never book a one-legger.)</div>
+      <div class="line"><span class="agent">"I've got a few minutes before my next call — go ahead and grab a pen and paper for me. Should take about 10 minutes to knock this out."</span></div>
+      <div class="route">They have time → Tab ② Intro</div>
+      <div class="route">Can't talk now → Tab ⑩ Appointment Fallback</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Branch: Already Has a Policy <span class="tone tone-assertive">POLICY FLIP</span></div>
+    <div class="branch">
+      <div class="branch-label">→ If they say they already have coverage</div>
+      <div class="line"><span class="agent">"Perfect — that's actually the reason for my call. I see that on your file here."</span></div>
+      <div class="line"><span class="agent">"Did you get the policy packet in the mail okay?"</span></div>
+      <div class="line"><span class="agent">"It looks like the address I have on file is [Address]? And date of birth as [DOB]?"</span></div>
+      <div class="line"><span class="agent">"Okay — I apologize, it looks like you were helped by one of our junior underwriters and he didn't leave any notes on your file. Which company were you placed with?"</span></div>
+      <div class="line"><span class="agent">"How much coverage did you end up with?"</span></div>
+      <div class="line"><span class="agent">"What are you paying per month for that?"</span></div>
+      <div class="line direction">(Look up quotes. If better coverage or lower rate available — continue. If term without living benefits — build value on the gap.)</div>
+      <div class="line"><span class="agent">"Here's what it looks like on my end — your file was flagged because you may qualify for a lower risk class or better rate. Grab a pen and paper and we'll get this sorted in about 10 minutes."</span></div>
+      <div class="route">Continue to Tab ② Intro → route to Policy Flip in Tab ⑤ after inventory</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Branch: Confused About Insurance Types</div>
+    <div class="branch">
+      <div class="branch-label">→ If they confuse mortgage protection with homeowners or bank insurance</div>
+      <div class="line"><span class="agent">"Has anyone explained the difference between homeowners insurance and mortgage protection with you before?"</span></div>
+      <div class="line direction">(Continue into the 3 Types of Insurance in Tab ② Intro.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Voicemail + Text Follow-Up</div>
+    <div class="script-block">
+      <div class="script-block-label">Voicemail</div>
+      <div class="line"><span class="agent">"Good morning — this message is for [Client Name]. This is [Your Name] getting back to you regarding your mortgage with [Lender]. We have some pending paperwork to get out to you — regarding an internal audit on the mortgage for [Address]. Give me a call back at [Your Number]. Thank you."</span></div>
+    </div>
+    <div class="script-block">
+      <div class="script-block-label">Text — Send Immediately After Voicemail</div>
+      <div class="line"><span class="agent">"[Client Name] — this is [Your Name] regarding your mortgage with [Lender]. Just left you a voicemail. Give me a call back — we have some pending paperwork to get out to you regarding the mortgage for [Address]. My direct number is [Your Number]. Thanks."</span></div>
+    </div>
+  </div>
+
+  <div class="route-strip">
+    <span class="route">No one helped + they have time → Tab ② Intro</span>
+    <span class="route">Already have policy → Policy Flip in Tab ② then Tab ⑤</span>
+    <span class="route">Can't talk → Tab ⑩ Appointment Fallback</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 2: INTRO -->
+<div class="tab-panel" id="tab-intro">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Phase 2 · Process Framing</div>
+    <div class="phase-title">Intro</div>
+    <div class="phase-rule">You are the doctor. They are the patient. Establish structure from the first word. Front-load friction points here so they don't block the close later.</div>
+  </div>
+
+  <div class="framework-box">
+    <strong>🎯 Framework — Front-Loading (Part 7)</strong>
+    Bring up potential friction points early so they don't ambush the close. The 3 Required Pieces section plants the SSN and banking ask right now — so when you ask for it in Tab ⑦ it feels like the logical next step, not a surprise demand.
+  </div>
+
+  <div class="section">
+    <div class="section-title">First Time or Been Through This Before?</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Okay — is this your first time going through the mortgage protection process, or have you been through this before?"</span></div>
+      <div class="line"><span class="agent">"It's pretty simple. I'm going to spend about two minutes asking you some health and financial questions. Based on that, my job as the medical underwriter is to run everything through the carriers in [State] and figure out what options you qualify for."</span></div>
+      <div class="line"><span class="agent">"From there, I'll present you the top options, you tell me what's comfortable and affordable, and we submit a request for coverage. Make sense?"</span></div>
+      <div class="line direction">(Wait for response.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">The 3 Types of Insurance on a Home</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"So when you close on a home, there are three types of insurance that come into play:"</span></div>
+      <div class="line"><span class="value">"Number one — Private Mortgage Insurance, or PMI. Required by the bank if you put less than 20% down. Does absolutely nothing for you or your family — it only protects the bank."</span></div>
+      <div class="line"><span class="value">"Number two — Homeowners insurance. Protects the physical structure — fire, flood, storm damage."</span></div>
+      <div class="line"><span class="value">"Number three — and the most important one — Mortgage Protection. This is the coverage that protects you and your family if you become sick, disabled, or pass away. It's what ensures your family can stay in the home no matter what."</span></div>
+      <div class="line"><span class="agent">"Any questions on that?"</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">3 Required Pieces — Plant the Compliance Frame Now</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Now — mortgage protection isn't something you can just sign up for anytime like car insurance. You have to qualify for it. So once we go to submit a request, there are three pieces of information required:"</span></div>
+      <div class="line"><span class="value">"First — driver's license. Confirms your identity. Do you have that on hand?"</span></div>
+      <div class="line direction">(Wait for response.)</div>
+      <div class="line"><span class="value">"Second — your Social. That's how they check your prescriptions and medical history through the MIB — the Medical Information Bureau. It's the primary factor in whether you're approved or declined."</span></div>
+      <div class="line"><span class="value">"Third — either a bank statement or voided check. Confirms there's no prior insurance fraud or money laundering linked to the account — and that's how the premium gets paid once you're approved."</span></div>
+      <div class="line"><span class="agent">"Make sense?"</span></div>
+    </div>
+
+    <div class="framework-box">
+      <strong>🎯 Framework — SSN Front-Load (Part 7)</strong>
+      Plant this casually right after the 3 Required Pieces. One line. Said once. This kills the SSN objection before it ever exists.
+      <div class="line" style="margin-top:10px"><span class="agent">"Some people get a little jumpy about the Social — totally normal. Just so you know, that's standard on every insurance application. It's how they pull your medical records and verify your identity. Nothing unusual about it."</span></div>
+    </div>
+  </div>
+
+  <div class="route-strip">
+    <span class="route">Intro complete → Tab ③ Financial Inventory</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 3: INVENTORY -->
+<div class="tab-panel" id="tab-inventory">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Phase 3 · Data Gathering</div>
+    <div class="phase-title">Financial Inventory</div>
+    <div class="phase-rule">Slow the pace all the way down. Administrative and intentional — not an interrogation. Everything they tell you is ammunition for Building the Why. Work through this in order — every field is a weapon you load now and fire in Tab ④.</div>
+  </div>
+
+  <div class="framework-box">
+    <strong>🎯 Framework — Ammunition (Part 1 + 5)</strong>
+    Gather ALL facts before you pitch anything. No mediocre answers — if they give you something surface-level, push back. Map every asset gap before the emotional close. The deeper your inventory, the easier your Why-build.
+  </div>
+
+  <!-- BLOCK 1: PERSONAL INFO -->
+  <div class="section">
+    <div class="section-title">Personal Info — Primary</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Just to confirm — you're still at [Address]?"</span></div>
+      <div class="line"><span class="agent">"Full name — first and last?"</span></div>
+      <div class="line"><span class="agent">"And date of birth?"</span></div>
+      <div class="line"><span class="agent">"What do you do for work? And roughly what are you pulling in per month from that?"</span></div>
+      <div class="line direction">(Let them talk. Build rapport. Match their energy — slow for slow, fast for fast. Note: income sources matter — W-2, 1099, pension, rental? If self-employed, flag income reliability for underwriting.)</div>
+      <div class="line"><span class="agent">"Smoker or non-smoker?"</span></div>
+      <div class="line"><span class="agent">"Go ahead and verify your height and weight for me."</span></div>
+      <div class="line"><span class="agent">"Any surgeries in the past few years?"</span></div>
+      <div class="line"><span class="agent">"Any current medications?"</span></div>
+      <div class="line direction">(Note medications — look up drug class if unfamiliar. Medications reveal conditions they may not volunteer.)</div>
+      <div class="line"><span class="agent">"Any DUIs, felonies, or anything on your background that might come up?"</span></div>
+      <div class="line direction">(Frame casually — administrative, not accusatory. Some carriers decline or rate up on DUI history.)</div>
+      <div class="line"><span class="agent">"And any debt outside of the mortgage — car payments, credit cards, anything significant?"</span></div>
+    </div>
+  </div>
+
+  <!-- BLOCK 2: SPOUSE / SECOND INSURED -->
+  <div class="section">
+    <div class="section-title">Spouse / Co-Applicant Info</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Are you married, single, or somewhere in between?"</span></div>
+      <div class="line direction">(If spouse: get name, age, occupation, income, smoker status, height/weight, medications, surgeries, background. Never close without both decision-makers present.)</div>
+      <div class="line direction">(If spouse not available: "What time works best to get [Spouse] on as well? I want to make sure you both have the full picture.")</div>
+    </div>
+  </div>
+
+  <!-- BLOCK 3: HOUSEHOLD INCOME + SURVIVORSHIP -->
+  <div class="section">
+    <div class="section-title">Household Income & Survivorship</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"What are you both pulling in combined per month right now — total household?"</span></div>
+      <div class="line"><span class="agent">"And who are the dependents in the home — kids, family members living with you?"</span></div>
+      <div class="line"><span class="agent">"If something happened to you — what would [Spouse / Beneficiary] realistically bring in on their own? Any pension, Social Security, rental income — anything they'd fall back on?"</span></div>
+      <div class="line direction">(This is the survivorship question. Note the gap between household income and what survives. That gap is what you're covering.)</div>
+      <div class="line"><span class="agent">"And what's your target retirement age?"</span></div>
+    </div>
+  </div>
+
+  <!-- BLOCK 4: MEDICAL CONDITIONS -->
+  <div class="section">
+    <div class="section-title">Medical Conditions — Full Screen</div>
+    <div class="info-box">
+      <strong>📋 Product Routing by Health Profile</strong>
+      Healthy — no major conditions → Term or IUL &nbsp;·&nbsp; Mild — controlled BP, Type 2 diabetes → Term/IUL, check underwriting &nbsp;·&nbsp; Serious — multiple meds, prior heart/cancer/COPD/stroke → Whole Life / Equity Protection &nbsp;·&nbsp; Multiple serious conditions → Guaranteed Issue
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Let me run through the standard medical questions real quick — this is what determines which carriers you qualify for."</span></div>
+      <div class="line"><span class="agent">"Any history of heart attack, stroke, or TIA?"</span></div>
+      <div class="line"><span class="agent">"Any cancer — ever?"</span></div>
+      <div class="line"><span class="agent">"Any stents or heart procedures?"</span></div>
+      <div class="line"><span class="agent">"Diabetes — pills or insulin?"</span></div>
+      <div class="line direction">(If diabetes: Type 1 or 2? Last A1C? Insulin-dependent? Controlled?)</div>
+      <div class="line"><span class="agent">"High blood pressure — on medication for that?"</span></div>
+      <div class="line"><span class="agent">"Any neuropathy, lupus, or rheumatoid arthritis?"</span></div>
+      <div class="line"><span class="agent">"Asthma or COPD?"</span></div>
+      <div class="line direction">(If COPD: albuterol vs. corticosteroid? Corticosteroid = more serious, may route to GI.)</div>
+      <div class="line"><span class="agent">"Any thyroid issues?"</span></div>
+      <div class="line"><span class="agent">"Any anxiety or depression — on medication?"</span></div>
+      <div class="line"><span class="agent">"Any kidney or liver disease?"</span></div>
+      <div class="line"><span class="agent">"Any overnight hospitalizations in the past two years?"</span></div>
+      <div class="line"><span class="agent">"Anything else a doctor has treated you for that an insurance company might flag?"</span></div>
+    </div>
+  </div>
+
+  <!-- BLOCK 5: MORTGAGE INFO -->
+  <div class="section">
+    <div class="section-title">Mortgage & Property Info</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"About how much do you still owe on the mortgage?"</span></div>
+      <div class="line"><span class="agent">"Was that a 15, 20, or 30-year loan? And was it a refinance or original purchase?"</span></div>
+      <div class="line"><span class="agent">"What's the monthly payment right now?"</span></div>
+      <div class="line"><span class="agent">"And if you were to sell the home today — what do you think it would go for?"</span></div>
+      <div class="line direction">(Calculate equity: home value minus balance. Write it down — you'll use this in Equity Protection if applicable.)</div>
+      <div class="line"><span class="agent">"Is this your forever home, or do you see yourselves moving at some point?"</span></div>
+      <div class="line direction">(If NO — moving: "How long do you plan to stay?" This determines coverage term window.)</div>
+      <div class="line"><span class="agent">"Are you making any extra payments to pay down the loan early?"</span></div>
+    </div>
+  </div>
+
+  <!-- BLOCK 6: ASSET INVENTORY / RETIREMENT GOLDEN QUESTION -->
+  <div class="section">
+    <div class="section-title">Asset Inventory — Retirement Golden Question</div>
+    <div class="framework-box">
+      <strong>🎯 Retirement Golden Question</strong>
+      This is the most important financial question in the inventory. It forces them to quantify what actually exists to cover the mortgage if they're gone — before you've pitched anything. Every answer is ammunition.
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Let me ask you the big one — what do you actually have right now that could offset the cost of the mortgage if you were to pass away? What would [Beneficiary] use?"</span></div>
+      <div class="line direction">(Let them answer fully. Don't interrupt. Common answers: 401k, savings, family help. All have gaps you'll expose in Tab ④.)</div>
+      <div class="line"><span class="agent">"How many months of bills do you have saved up right now — just as a cushion?"</span></div>
+      <div class="line direction">(This is the runway question. If they say 3 months — that's exactly how long [Beneficiary] has before the house is at risk. You'll feed this back to them in the Why-build.)</div>
+      <div class="line"><span class="agent">"Do you have anything in a 401k, IRA, stocks, bonds, mutual funds, CDs, or significant savings?"</span></div>
+      <div class="line direction">(If 401k/IRA: "I'm assuming that's more of a retirement account — not something [Beneficiary] could immediately liquidate to cover the mortgage?")</div>
+      <div class="line direction">(If significant savings: "And how long could that realistically cover the mortgage payments before it ran out?")</div>
+    </div>
+  </div>
+
+  <!-- BLOCK 7: EXISTING LIFE INSURANCE -->
+  <div class="section">
+    <div class="section-title">Existing Life Insurance</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Do you have any life insurance in place right now?"</span></div>
+      <div class="line direction">(If YES:)</div>
+      <div class="line"><span class="agent">"Is that private or through work?"</span></div>
+      <div class="line"><span class="agent">"Which company?"</span></div>
+      <div class="line"><span class="agent">"What's the face amount — how much would pay out?"</span></div>
+      <div class="line"><span class="agent">"What are you paying per month for that?"</span></div>
+      <div class="line"><span class="agent">"Who's the beneficiary on that policy?"</span></div>
+      <div class="line"><span class="agent">"And when did you get that?"</span></div>
+      <div class="line direction">(Note: year purchased + face amount + monthly cost = whether they're overpriced, underinsured, or missing living benefits. All three are flip opportunities.)</div>
+      <div class="line direction">(If work insurance: flag now — "I'll come back to that." Policy flip handled in Tab ⑥.)</div>
+    </div>
+  </div>
+
+  <!-- HEALTH BRIDGE -->
+  <div class="section">
+    <div class="section-title">Health Bridge — Lock In Before the Hold</div>
+    <div class="framework-box">
+      <strong>🎯 Benefit Bridge — Healthy Profiles Only</strong>
+      After health questions confirm a clean profile, reward them immediately. Creates anticipation, locks in urgency. Do NOT skip this — the script used to jump straight to the hold without this moment.
+    </div>
+    <div class="script-block">
+      <div class="line direction">(If clean health profile — no major conditions, not heavily medicated:)</div>
+      <div class="line"><span class="agent">"Okay — good news. Based on what you're telling me, you're going to qualify for the top-tier options. That means the best rates, the best carriers, and full living benefits. That's what I was hoping to see."</span></div>
+      <div class="line direction">(If mixed health — some conditions but manageable:)</div>
+      <div class="line"><span class="agent">"Okay — there are definitely some things to work around here, but I've placed a lot of clients in similar situations. I'll make sure I'm matching you to a carrier that's built for your profile."</span></div>
+      <div class="line direction">(If serious health — multiple conditions, routing to WL/GI:)</div>
+      <div class="line"><span class="agent">"Okay — based on what you're describing, standard term probably isn't the right fit. But there are carriers specifically designed for situations like yours, and I'd rather get you in the right product than put you in something that won't pay out when it matters."</span></div>
+    </div>
+  </div>
+
+  <div class="route-strip">
+    <span class="route">Inventory complete → Tab ④ Build the Why</span>
+    <span class="route">Existing policy flagged → Handle in Tab ⑥ Policy Flip after Why-build</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 4: BUILD WHY -->
+<div class="tab-panel" id="tab-why">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Phase 4 · Emotional Anchor</div>
+    <div class="phase-title">Build the Why</div>
+    <div class="phase-rule">Slow to 40% speed. Listen 80%, talk 20%. This is where the sale is made or lost. Silence is a weapon — use it.</div>
+  </div>
+
+  <div class="framework-box">
+    <strong>🎯 Framework — Discovery + Commitment Check (Parts 1, 5, 6)</strong>
+    No mediocre answers. When they give a surface-level response — dig. The client MUST verbally commit to needing the solution BEFORE you present any numbers. Do not move to the hold until you have that verbal commitment. Walk them from Point A (current state) to Point B (desired future state) — make the cost of doing nothing undeniable.
+  </div>
+
+  <div class="section">
+    <div class="section-title">NEPQ Opening — Situation → Problem → Consequence</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Okay [Client Name] — before we go any further, I'm here to help figure out some form of protection for this home. This is your biggest asset, and we want to make sure it's protected."</span></div>
+      <div class="line"><span class="agent">"Correct me if I'm wrong — but looking at the situation, God forbid something happened to you yesterday… it sounds like that would put [Beneficiary] in a pretty tough financial spot with the home. Would that be a fair assumption?"</span></div>
+      <div class="line direction">(Statement, not a question. Pause and let them respond.)</div>
+      <div class="line"><span class="agent">"Let me ask you — if something were to happen to you unexpectedly… what actually happens to the mortgage? Who's responsible for it?"</span></div>
+      <div class="line direction">(Listen fully. If they say "they'd figure it out":)</div>
+      <div class="line"><span class="agent">"When you say 'figure it out' — what do you mean exactly?"</span></div>
+      <div class="line"><span class="agent">"If [Beneficiary] had to cover that mortgage on their own — how long could they realistically keep up with the payments?"</span></div>
+      <div class="line"><span class="agent">"And if they couldn't keep up — what would happen to the house?"</span></div>
+      <div class="line direction">(Pause. Let it land. Don't rush past this moment.)</div>
+      <div class="line"><span class="agent">"On a scale of 1 to 10 — how concerned does that make you?"</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Dig Deep — When They Give Surface Answers</div>
+    <div class="branch">
+      <div class="branch-label">→ "It would be tough / difficult"</div>
+      <div class="line"><span class="agent">"In what way? What would that look like for your family day-to-day?"</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ "They'd sell the home"</div>
+      <div class="line"><span class="agent">"Is that something you'd actually want them to do? What would that do to the family — having to leave?"</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ "Family would help"</div>
+      <div class="line"><span class="agent">"That's great you have family like that. But — would you rather leave them with a check… or a bill?"</span></div>
+      <div class="line direction">(Pause. Let it land.)</div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ "I have savings"</div>
+      <div class="line"><span class="agent">"How long could you realistically live off savings? And once that runs out — what happens next?"</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ No emotional event / nothing recent</div>
+      <div class="line"><span class="agent">"Got it — so this isn't coming from something that just happened. It's more about being responsible long-term?"</span></div>
+      <div class="line"><span class="agent">"What made now the right time to at least look into this?"</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ They say "probably" to anything</div>
+      <div class="line"><span class="agent">"Probably?"</span></div>
+      <div class="line direction">(Just repeat the word back. Pause.)</div>
+      <div class="line"><span class="agent">"So you're not 100% positive?"</span></div>
+      <div class="line direction">(Forces them to either commit or reveal the real hesitation. One of the most powerful follow-ups in the playbook.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cancer Analogy — Term / IUL Profiles Only <span class="tone tone-slow">SLOW DOWN</span></div>
+    <div class="warn-box">
+      <strong>⚡ Only Use for Term or IUL Profiles</strong>
+      Skip this section for Whole Life / Equity Protection profiles. Go straight to Equity Protection below.
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Let me put something into perspective, [Client Name]."</span></div>
+      <div class="line"><span class="agent">"Statistically — 1 in 3 people get cancer at some point in their life. And in 2024, the average cancer treatment runs anywhere from $100,000 to $300,000 in medical bills."</span></div>
+      <div class="line"><span class="agent">"Let's say — God forbid — you get diagnosed and you're going through treatment. Your income drops to zero because you can't work."</span></div>
+      <div class="line"><span class="agent">"Now you're trying to cover [monthly expenses] in bills… on top of staring at $120,000 in medical bills."</span></div>
+      <div class="line"><span class="agent">"God forbid that happened — what would that look like financially for you and your family?"</span></div>
+      <div class="line direction">(Long pause. Let them answer fully. Don't interrupt.)</div>
+      <div class="line"><span class="agent">"Mhmmm… got it… understood."</span></div>
+      <div class="line direction">(More pause. Let the weight of their answer sit.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">The 89% Stat — Deploy After Cancer Analogy or Living Benefits Pitch</div>
+    <div class="framework-box">
+      <strong>🎯 When to Use</strong>
+      Drop this after the cancer analogy OR whenever they say "we have life insurance" or "I'm not worried about dying." It reframes the whole conversation from death coverage to living coverage — where your product wins.
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="value">"Here's something most people don't realize — the number one cause of bankruptcies and home foreclosures in this country is not death. It's unforeseen medical bills, or becoming disabled and not being able to work."</span></div>
+      <div class="line"><span class="value">"You actually have an 89% higher likelihood of becoming sick or disabled than you do of passing away."</span></div>
+      <div class="line direction">(Pause. Let that number land.)</div>
+      <div class="line"><span class="agent">"That's the reason our clients love this coverage — it doesn't just protect the family when you're gone. It protects the home while you're still here."</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Probate Education — Use When Urgency Is Soft</div>
+    <div class="framework-box">
+      <strong>🎯 When to Use</strong>
+      When they're emotionally detached or downplaying urgency — "family would figure it out," "it'd be fine." Don't wait for them to ask. Drop this proactively. Makes the consequence timeline undeniable.
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Let me explain something most families don't realize — and this is important."</span></div>
+      <div class="line"><span class="agent">"When someone passes away, if money or property isn't set up properly — everything has to go through what's called probate court. A judge steps in and oversees who gets what, what debts get paid, how everything gets distributed."</span></div>
+      <div class="line"><span class="agent">"That process can take six months… sometimes twelve… sometimes longer depending on the state."</span></div>
+      <div class="line"><span class="value">"During that entire time — the mortgage payment doesn't stop."</span></div>
+      <div class="line direction">(Pause. Hard pause.)</div>
+      <div class="line"><span class="agent">"The bank still expects their money. So if the house is tied up in probate and payments aren't being made — what usually happens to the home?"</span></div>
+      <div class="line direction">(Let them answer. They'll say foreclosure, sell it, lose it. That's the pain. Now you tie it back to the why.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Healthy Person's Window — Use When They're Stalling Despite Good Health</div>
+    <div class="framework-box">
+      <strong>🎯 When to Use</strong>
+      When a healthy lead is dragging their feet — "let me think about it," "maybe later," "I'm fine for now." Health is not a reason to wait. It's the reason to act. Flip the frame.
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"When you apply for coverage, you're really getting two things. First — the policy itself. And second — your medical approval. That second piece is actually the most important part."</span></div>
+      <div class="line"><span class="value">"Right now, you're in what we call the healthy person's window. Windows open and they close. You're still healthy enough to qualify for preferred coverage — and that window gets harder to qualify for every single year."</span></div>
+      <div class="line direction">(Pause.)</div>
+      <div class="line"><span class="agent">"Here's the thing — if you get approved today and something happens tomorrow, it doesn't matter. They cannot take your medical approval away from you. Your rate and your benefit are locked in from day one."</span></div>
+      <div class="line"><span class="agent">"Most people who end up paying double for coverage were healthy when they first thought about it. Does that make sense?"</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Equity Protection Pitch — Whole Life Profiles Only</div>
+    <div class="warn-box">
+      <strong>⚡ Only Use for Whole Life Profiles</strong>
+      Use when health profile requires Whole Life. Skip entirely for Term/IUL profiles.
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"As I'm sure you know, [Client Name] — covering the entire mortgage would be close to another full mortgage payment. Which none of my clients in your situation do."</span></div>
+      <div class="line"><span class="agent">"What my clients do instead is put together what we call an equity protection plan. Has anyone walked you through how equity protection works?"</span></div>
+      <div class="line"><span class="agent">"Basically it's a much more practical, much more affordable approach. My goal is to solve the maximum amount of your needs with the least amount of insurance necessary."</span></div>
+      <div class="line"><span class="value">"And here's something most people don't realize about these whole life products — this isn't just a death benefit. If you were to get diagnosed with a terminal illness, or become critically ill — cancer, heart attack, stroke — this policy can pay out a significant portion of the benefit while you're still alive. So you're protected on both sides: while you're living and after you're gone."</span></div>
+      <div class="line direction">(Pause. Let that land. For aged MP leads with health issues, living benefits on WL is often the strongest value statement — they've lived it or know someone who has.)</div>
+      <div class="line"><span class="agent">"God forbid something happened to you yesterday — who would the home go to today?"</span></div>
+      <div class="line"><span class="agent">"Would they plan on keeping the home or selling it?"</span></div>
+      <div class="line"><span class="agent">"Do they live with you or do they have their own place? Local or out of state?"</span></div>
+      <div class="line direction">(Based on answers, determine the coverage window: typically 9 months to 24 months of mortgage payments.)</div>
+      <div class="line"><span class="agent">"For your situation — the most coverage you'd really need is around a year to two years of mortgage payments. That gives [Beneficiary] the time to grieve, sort the finances, and move forward in a healthy way — without being forced into a fire sale on the home."</span></div>
+      <div class="line"><span class="agent">"The main goal is to protect the [equity amount] you've built in this home and give [Beneficiary] the time to make the right decision without pressure."</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Commitment Check — Framework Gate — Do Not Skip</div>
+    <div class="framework-box">
+      <strong>🎯 Framework — Verbal Commitment Gate</strong>
+      The client MUST commit to needing the solution before you present numbers. Do not move to the hold without this. If they won't commit here — dig back in before moving forward.
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Based on everything you've shared — it sounds like you want to make sure [Beneficiary] doesn't lose the house no matter what happens. And if something happened while you were still alive — sickness, disability — you'd want the mortgage covered too. Is that fair?"</span></div>
+      <div class="line direction">(Wait for yes.)</div>
+      <div class="line"><span class="agent">"Would you say getting something in place for [Beneficiary] is more of a necessity than a luxury?"</span></div>
+      <div class="line direction">(If they say "luxury" — ask why. Dig back in before moving on.)</div>
+      <div class="line direction">(Once they commit: "Perfect.")</div>
+      <div class="line"><span class="agent">"I'm going to put you on a brief 2-to-3 minute hold while I run your information through my system and find the best options available to you. Keep the phone close in case any questions come up. Any questions before I do that?"</span></div>
+    </div>
+  </div>
+
+  <div class="route-strip">
+    <span class="route">Healthy (Term/IUL) → Tab ⑤ Options — Term or IUL section</span>
+    <span class="route">Unhealthy (WL) → Tab ⑤ Options — Whole Life / Equity section</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 5: OPTIONS -->
+<div class="tab-panel" id="tab-options">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Phase 5 · Presentation</div>
+    <div class="phase-title">Presenting Options</div>
+    <div class="phase-rule">All selling is done. You are a doctor delivering a prescription. Present highest first. Have them write every option down. Silent close — first person to speak loses.</div>
+  </div>
+
+  <div class="framework-box">
+    <strong>🎯 Framework — Pitching (Part 1)</strong>
+    Only offer solutions AFTER establishing value and confirming the verbal commitment in Tab ④. Never pitch early. Present yourself as matching the client to a carrier based on their health and budget — not selling them something.
+  </div>
+
+  <div class="info-box">
+    <strong>📋 Before You Present</strong>
+    Have them write down: your name, license number, and direct number. Say: "It's very important that [Beneficiary] has my info — God forbid something happens, I can get those funds to your family within 2–4 business days."
+  </div>
+
+  <div class="section">
+    <div class="section-title">Setup — All Product Types</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Okay [Client Name] — are you still with me? Do you still have that pen and paper?"</span></div>
+      <div class="line"><span class="agent">"I'm going to give you three options. You let me know what's comfortable and affordable, and we'll go from there."</span></div>
+      <div class="line"><span class="agent">"And just so you know — once we get approved, I'm assigned to you going forward. A year from now I'll check back in. If you want to increase coverage — we do that. If things are tighter and you need to bring it down — we do that too. My job is to make sure you're always in the best position. Make sense?"</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Term Life — Healthy Profile (Ages 18–70)</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"All three options are with [Carrier] — A-rated, over 100 years in business, never missed a payout."</span></div>
+      <div class="line"><span class="value">"What makes these different from standard life insurance is the living benefits. If you were to become disabled, develop a critical illness — stroke, heart attack, cancer — or receive a terminal diagnosis, this policy pays out up to 80% of the face amount while you're still alive."</span></div>
+      <div class="line"><span class="value">"That's the number one reason people get this — the number one cause of foreclosures in this country isn't death. It's unforeseen medical bills and being unable to work. You have an 89% higher likelihood of becoming sick or disabled than passing away — that's what this covers."</span></div>
+      <div class="line"><span class="agent">"Price never goes up. Coverage never goes down. Locked in from day one."</span></div>
+      <div class="line"><span class="agent">"Option 1 — [100% / full mortgage] — [premium]/month."</span></div>
+      <div class="line"><span class="agent">"Option 2 — [75% of mortgage] — [premium]/month."</span></div>
+      <div class="line"><span class="agent">"Option 3 — [50% of mortgage] — [premium]/month."</span></div>
+      <div class="line"><span class="agent">"Now — I'm the initial underwriter, not the final decision. That's up to [Carrier]. But if I'm able to get you approved — which one of those would make the most sense for you and your family?"</span></div>
+      <div class="line direction">(Silent close. Stop talking. Do not fill the silence.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">IUL — Healthy / Building Wealth Profile</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"All three are with [Carrier] — structured as an Indexed Universal Life."</span></div>
+      <div class="line"><span class="value">"This is a dual-purpose product. It covers the mortgage now — and when the mortgage is paid off, it converts into permanent life insurance with cash value you can access tax-free."</span></div>
+      <div class="line"><span class="value">"Full living benefits — up to 80% payout if disabled, critically ill, or terminally ill."</span></div>
+      <div class="line"><span class="value">"Cash value grows alongside the market — averaging 5 to 7% per year. Floor-and-cap structure — only upside, no downside risk."</span></div>
+      <div class="line"><span class="agent">"Price never goes up. Coverage never goes down. Day-one coverage."</span></div>
+      <div class="line"><span class="agent">"Option 1 — [100% / full mortgage] — [premium]/month."</span></div>
+      <div class="line"><span class="agent">"Option 2 — [75%] — [premium]/month."</span></div>
+      <div class="line"><span class="agent">"Option 3 — [60%] — [premium]/month."</span></div>
+      <div class="line"><span class="agent">"I'm all about sustainability. Which one of those makes the most financial sense for you?"</span></div>
+      <div class="line direction">(Silent close. Stop talking.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Whole Life / Equity Protection — Unhealthy Profile</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"All three are with [Carrier] — permanent whole life coverage."</span></div>
+      <div class="line"><span class="value">"This policy lasts your entire life — no expiration. Price locked from day one, never goes up. Builds cash value at 2 to 4% per year that you can borrow against tax-free."</span></div>
+      <div class="line"><span class="agent">"Based on your situation — we're covering a window of time to protect [Beneficiary] and the equity in this home."</span></div>
+      <div class="line"><span class="agent">"Option 1 — 18 months of mortgage payments — [total] / [premium]/month."</span></div>
+      <div class="line"><span class="agent">"Option 2 — 12 months of mortgage payments — [total] / [premium]/month."</span></div>
+      <div class="line"><span class="agent">"Option 3 — 9 months of mortgage payments — [total] / [premium]/month."</span></div>
+      <div class="line"><span class="agent">"The real question is — how much time would you want [Beneficiary] to have to make the right decision without being pressured?"</span></div>
+      <div class="line direction">(Silent close. Stop talking.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">If They Can't Decide / Push Back on Price</div>
+    <div class="branch">
+      <div class="branch-label">→ "I need to think about it" / can't choose</div>
+      <div class="line"><span class="agent">"Totally understand. Here's what I tell all my clients — let's start at the lower end with what you know you can afford. You'll hear from me twice: now, and again in a year for your annual review. At that point if you want to increase it, we do that. The most important thing is getting something in place today. Does that sound fair?"</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ "The price is too high"</div>
+      <div class="line"><span class="agent">"Completely understand — I wouldn't put anything in place that isn't sustainable. Here's the thing though — based on what you told me about [Beneficiary], doing nothing is actually the more expensive decision if something happened. So let's put something smaller in place that fits. You're covered from day one, and we adjust it up later. Sound fair?"</span></div>
+    </div>
+  </div>
+
+  <div class="route-strip">
+    <span class="route">Option chosen → Tab ⑦ Application</span>
+    <span class="route">Objection at close → Tab ⑥ Objections — Closing Objections section</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 6: OBJECTIONS -->
+<div class="tab-panel" id="tab-objections">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Phase 6 · Momentum Protection</div>
+    <div class="phase-title">Objections</div>
+    <div class="phase-rule">An objection is not a no — it's a request for clarity. Acknowledge → Neutralize → Redirect to their why. Never argue. Never defend. Always move forward with a question.</div>
+  </div>
+
+  <div class="framework-box">
+    <strong>🎯 Framework — Objection Handling (Part 7)</strong>
+    Excellent discovery in Tab ④ makes most objections unnecessary. If you're getting a lot of objections, your Why wasn't deep enough — go back and dig. For objections that do come: front-load early (already done in Tab ②), never argue, always redirect to the emotional pain they already shared with you.
+  </div>
+
+  <div class="info-box">
+    <strong>📋 Default Reset Line — Use Before Any Rebuttal</strong>
+    "Perfect — that's actually the reason for my call. I see that on your file." Resets authority. Use it liberally.
+  </div>
+
+  <div class="section">
+    <div class="section-title">Quick-Reference Matrix</div>
+    <div class="obj-table-wrap">
+      <table class="obj-table">
+        <thead>
+          <tr>
+            <th>Objection</th>
+            <th>Level 1</th>
+            <th>Level 2 — They Push</th>
+            <th>Level 3 — Still Resistant</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Not interested</td>
+            <td>Pain redirect: "Just so you're aware — this is the only coverage that pays the home loan if you become sick or pass away. What does it look like for your family to pay the bills without your income?"</td>
+            <td>"I'm assuming when you submitted this request you just wanted to make sure the home was taken care of if something happened. Is that fair?"</td>
+            <td>"Are you more concerned the price is going to be too high — or that you might not qualify?"</td>
+          </tr>
+          <tr>
+            <td>Don't remember filling it out</td>
+            <td>"Did maybe a spouse or family member fill it out? … No? That's okay — if you're anything like me, I can't even remember what I had for breakfast. Grab a pen and paper, this'll be quick."</td>
+            <td>"Do you currently have any protection in place that pays out if you're sick, disabled, or pass away?"</td>
+            <td>Anchor to the why: "The reason this matters is [Beneficiary] — let's just make sure they're covered."</td>
+          </tr>
+          <tr>
+            <td>Already have coverage</td>
+            <td>"Perfect — that's the reason for my call. Which company were you placed with? How much coverage? What are you paying per month?"</td>
+            <td><strong>If term without living benefits:</strong> "Were you aware that policy doesn't cover you while you're still alive? The number one cause of foreclosures in this country isn't death — it's unforeseen medical bills and being unable to work. What happens to the mortgage if you get sick or disabled and can't work for six months?" <br><br><strong>If work insurance:</strong> "The moment you leave that job — retire, get laid off, switch careers — all of that disappears. And if you got sick while still employed, you'd lose the coverage right when you needed it most and likely couldn't qualify for new coverage. Private bills need private insurance." <br><br><strong>If overpriced / outdated:</strong> "What year did you get that? Rates have dropped significantly. I can likely get you the same coverage — or better — for less. Let me run you back through the system real quick."</td>
+            <td>Policy flip close: "What I'm going to do is run you back through the system and make sure you're in the right carrier for your situation. If what you have is genuinely the best fit — I'll tell you that straight up. But if I can do better, I'd rather get you there. Fair enough?"</td>
+          </tr>
+          <tr>
+            <td>Too expensive</td>
+            <td>"That's the reason for my call — looks like you were quoted high numbers by one of my reps. I'm the manager assigned to find more practical, affordable options for your budget."</td>
+            <td>"Doing nothing would actually be the more expensive decision if something happened — right? So let's put something smaller in place that fits, and adjust it up later."</td>
+            <td>"What's the most you'd feel comfortable with per month? Let's work backward from there."</td>
+          </tr>
+          <tr>
+            <td>Already have through work</td>
+            <td>"The moment you leave, retire, or change jobs — all of that disappears. Worst case: if you got sick and got laid off, you'd lose the coverage right when you need it most and likely couldn't qualify for new coverage. Private bills need private insurance."</td>
+            <td>"Your work policy only pays on death — not while you're still alive if you get sick or disabled. That's the gap we're closing here."</td>
+            <td>"Does your work policy pay 100% of your income and guarantee the mortgage is paid off? … So this handles the piece your work plan doesn't."</td>
+          </tr>
+          <tr>
+            <td>Need to think / talk to spouse</td>
+            <td>"Do you need to think about whether to do this at all — or do you know you want it and it's just a matter of which option?"</td>
+            <td>"I'd recommend starting at the low end with what you know you can afford. A year from now I'll check in and we can adjust up. The address we have on file is [Address]?"</td>
+            <td>Re-anchor: "You mentioned [Beneficiary] would be in a really tough spot. Is that still accurate?" Then: "What do you feel like we should do to make sure they're protected?"</td>
+          </tr>
+          <tr>
+            <td>Just give me a quote</td>
+            <td>"Coverage is based entirely on age and health — there are 30 carriers. I just need to confirm a few things to make sure what I show you is accurate. Sound fair?"</td>
+            <td>"Most people are somewhere between $40 and $160 a month. But I don't want to throw a number that ends up being wrong. Give me two quick answers and I'll dial it right in."</td>
+            <td>"Sounds like you're just trying to see if this is even in the budget — right? If we found something in that range that protects the house, would you at least want to look at it?"</td>
+          </tr>
+          <tr>
+            <td>Just send me information</td>
+            <td>"Your file shows as incomplete — there's no coverage on file. Everything is based on your age and health, so I need to cover that first. That way what I send you is actually accurate. Sound fair?"</td>
+            <td>"The reason I don't just blast quotes is because people overpay or get the wrong policy. If I send something, I want it right for you. Quick question — if something happened, who would be stuck dealing with everything?"</td>
+            <td>"Usually when someone says just send info, it's because they're either just browsing — or they've had a bad experience before. Which one is it for you?"</td>
+          </tr>
+          <tr>
+            <td>Is this required?</td>
+            <td>"Technically they won't take your home away if you don't have it — but you'd be one of the rare people without it. It's like driving without car insurance." (Act mildly confused.)</td>
+            <td>"The bank only requires the payment. If something happened to you, the bank still expects that payment — right? That's why families put this in place — not for the bank, but for themselves."</td>
+            <td>Redirect: "This is the only coverage that pays the home loan if you become sick or pass away. The address we have on file is [Address]?"</td>
+          </tr>
+          <tr>
+            <td>Took care of at closing</td>
+            <td>"That was the mortgage — I'm calling about the mortgage protection. Banks used to offer this before 2008 but now it's contracted to insurance carriers, which is who I work with. You're the beneficiary — not the bank."</td>
+            <td>Continue: "It's always done after closing and separately — so the money goes to your family, not the bank."</td>
+            <td>Redirect to pain: "The address we have on file is [Address]? So this makes sure [Beneficiary] doesn't lose the home."</td>
+          </tr>
+          <tr>
+            <td>VA / TSP / pension</td>
+            <td>VA: "The VA backs the loan for the bank — but does nothing for you or your family if something happens. That's exactly why mortgage protection exists separately."</td>
+            <td>TSP: "That's mainly your retirement account — not something your family can immediately use to pay off the house if something happened tomorrow."</td>
+            <td>Pension: "Walk me through — if you passed away tomorrow, what would [Spouse] actually receive and on what timeline?" Then close the gap.</td>
+          </tr>
+          <tr>
+            <td>Sounds like a scam</td>
+            <td>"I can verify my license through the state right now — I'll text you the link. It only takes 10 minutes. Is morning or afternoon better for you?"</td>
+            <td>Text: https://sbs.naic.org/solar-external-lookup — "Let me know when you get that."</td>
+            <td>"What would you need to see to feel comfortable moving forward?"</td>
+          </tr>
+          <tr>
+            <td>Do I have to decide today?</td>
+            <td>"Yes — we submit the original coverage request today. But I recommend starting at the low end so you're not overcommitting. I do annual reviews — we'll revisit in a year. The address we have on file is [Address]?"</td>
+            <td>"Are you willing to go one more day without coverage if something happened tomorrow?"</td>
+            <td>"What's making you want to wait? Let me see if I can help with that."</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Quick-Fire Objections + Framework "Probably" Mirror</div>
+    <div class="script-block">
+      <div class="line"><span class="objection">"I'm busy / I'm at work / I'm driving"</span></div>
+      <div class="line"><span class="agent">"I'm really busy too — I'll make this brief. Go ahead and grab something to write with."</span> <span class="direction">(If driving: "I don't want you to get in an accident — pull over real quick.")</span></div>
+      <div class="divider"></div>
+      <div class="line"><span class="objection">"Take me off your list"</span></div>
+      <div class="line"><span class="agent">"To be straight with you — there is no list. This is the request you submitted about protecting your family. The address we have on file is [Address]?"</span></div>
+      <div class="divider"></div>
+      <div class="line"><span class="objection">"What company are you with?"</span></div>
+      <div class="line"><span class="agent">"I'm an independent underwriter licensed through the state of [State] — not captive to any one company. I work with the top 30 A and A+ rated carriers, including Mutual of Omaha, National Life Group, Transamerica, and others."</span></div>
+      <div class="divider"></div>
+      <div class="line"><span class="objection">"We're going to sell the home"</span></div>
+      <div class="line"><span class="agent">"Perfect — this coverage travels with you and transfers when you buy your next home. Do you plan on staying local or moving out of state?"</span></div>
+      <div class="divider"></div>
+      <div class="line"><span class="objection">"We already sold the home"</span></div>
+      <div class="line"><span class="agent">"Got it — did you move into a new home or are you renting now?"</span> <span class="direction">(New home: get address, update file. Renting: pivot to life insurance.)</span></div>
+      <div class="divider"></div>
+      <div class="line"><span class="objection">"Call got disconnected"</span></div>
+      <div class="line"><span class="agent">"Hey [Client Name] — looks like we got disconnected."</span> <span class="direction">(Repeat back the last thing they said and pick up exactly where you left off.)</span></div>
+      <div class="divider"></div>
+      <div class="framework-box" style="margin-top:10px">
+        <strong>🎯 Framework — "Probably" Mirror (Advanced Questions)</strong>
+        <div class="line" style="margin-top:8px"><span class="direction">When they say "probably" to anything — benefit, commitment, or urgency:</span></div>
+        <div class="line"><span class="agent">"Probably?"</span></div>
+        <div class="line direction">(Just that word. Pause. Let the silence work.)</div>
+        <div class="line"><span class="agent">"So you're not 100% positive?"</span></div>
+        <div class="line direction">(Forces them to either fully commit or surface the real hesitation. One of the most powerful one-word follow-ups in the playbook.)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Hail Mary Close — Still Resistant After Full Presentation</div>
+    <div class="framework-box">
+      <strong>🎯 When to Use</strong>
+      You've presented options, handled objections, and they're still stalling with no clear reason. Three things must be true to close: product makes sense, fits budget, they trust you. Diagnose which one is missing — then fix that one thing.
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"I want to be straight with you — I let you know at the front of this call that we'd need to come to some kind of conclusion today. Let me check three things real quick."</span></div>
+      <div class="line"><span class="agent">"One — the coverage needs to make sense. You said you really liked [Option], right?"</span></div>
+      <div class="line"><span class="client">"Yes."</span></div>
+      <div class="line"><span class="agent">"Two — it needs to fit the budget. You mentioned [Amount] might work, which means [Lower Amount] is even less — that should definitely be manageable, correct?"</span></div>
+      <div class="line"><span class="client">"Yes, correct."</span></div>
+      <div class="line"><span class="agent">"Three — you have to trust the policy. [Carrier] is A-rated with over 100 years in business — I'm assuming that's not the issue. Is there any discomfort with me specifically?"</span></div>
+      <div class="line"><span class="client">"No, not at all."</span></div>
+      <div class="line"><span class="agent">"Okay — so since all three of those things exist… I'm just curious. What's really going on?"</span></div>
+      <div class="line direction">(Silence. Stop talking. First person to speak loses. They will fill the gap — and whatever comes out is the real objection you can actually handle.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Policy Flip Checklist — Full Sequence for "Already Have Coverage"</div>
+    <div class="framework-box">
+      <strong>🎯 When to Use</strong>
+      They confirm they have an actual life or mortgage policy. Run this sequence before dismissing them — most are underinsured, missing living benefits, or overpaying. This is where bonus deals come from.
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Perfect — that's the reason for my call. I see that on your file here. Just to confirm I'm speaking with the right person — the address we have on file is [Address]? And your date of birth is [DOB]?"</span></div>
+      <div class="line"><span class="agent">"The reason I'm reaching out is it looks like one of our underwriters helped you with coverage but didn't update your file properly."</span></div>
+      <div class="line direction">(Run through this checklist — each answer reveals a gap:)</div>
+      <div class="line"><span class="agent">"Did you receive the policy packet in the mail okay?"</span></div>
+      <div class="line"><span class="agent">"Did you go with the complete plan or the partial plan?"</span></div>
+      <div class="line"><span class="agent">"How much coverage did you end up with?"</span></div>
+      <div class="line"><span class="agent">"What are you paying per month for that?"</span></div>
+      <div class="line"><span class="agent">"Which company did you go with?"</span></div>
+      <div class="line"><span class="agent">"Is there a reason you went with one of our B-rated carriers?"</span></div>
+      <div class="line"><span class="agent">"Were you not able to qualify for one of the top-rated options? Any health issues at the time?"</span></div>
+      <div class="line direction">(After checklist — evaluate: Can you get them better coverage? Lower rate? If they have term without living benefits → build the 89% stat. If overpriced → run new quotes. If B-rated carrier → upgrade.)</div>
+      <div class="line"><span class="agent">"This will only take a few minutes and we can get this updated for you — make sure you're in the right product for your situation."</span></div>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label">→ Already Have an Agent They're Working With</div>
+      <div class="line"><span class="agent">"Totally fair — most people I speak with already have someone. Out of curiosity — what made you decide to start looking into this in the first place?"</span></div>
+      <div class="line direction">(Reopen the conversation on their terms. Then:)</div>
+      <div class="line"><span class="agent">"Makes sense. Are you just getting a second opinion, or are you pretty locked in with them?"</span></div>
+      <div class="line direction">(If moving forward with other agent — use the Mechanic Analogy:)</div>
+      <div class="line"><span class="agent">"I actually recommend all my clients speak with more than one person. It's like getting a car repaired — you don't just go with the first quote. You compare cost and diagnosis. With something as important as your life and health coverage, you want the best benefits at the lowest cost possible. Would it hurt to take 10 minutes just to make sure everything is structured right before you lock anything in?"</span></div>
+    </div>
+  </div>
+
+  <div class="warn-box" style="margin-top:24px">
+    <strong>⚡ 3-Objection Rule — Abundance Walkaway</strong>
+    If you've hit 3+ objections with no movement and they're not engaging — disengage with posture. Do not grind a dead lead. Abundance mindset: the next call is better than this one.<br><br>
+    <span style="color:#efefef;font-weight:600">"No worries — sounds like now just isn't the right time. I'll make a note on your file and have someone reach back out when things change. You take care."</span><br><br>
+    <span style="font-size:12px;color:#ff9999">Hang up clean. No pleading. No one more try. Move to the next dial immediately.</span>
+  </div>
+
+  <div class="route-strip">
+    <span class="route">Objection handled → Return to where you left off</span>
+    <span class="route">Option chosen → Tab ⑦ Application</span>
+    <span class="route">Still resistant → Re-anchor to the Why from Tab ④</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 7: APPLICATION -->
+<div class="tab-panel" id="tab-application">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Phase 7 · Compliance</div>
+    <div class="phase-title">Application — SSN & Banking</div>
+    <div class="phase-rule">Assume the close. You planted this in Tab ②. Now collect it smoothly. Calm, administrative, confident. Frame every ask as standard compliance.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Social Security Number</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Okay — the way these companies verify your identity and pull your medical records is through your Social. Go ahead with that whenever you're ready."</span></div>
+      <div class="line direction">(Wait. Don't explain further unless they push back.)</div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ First pushback</div>
+      <div class="line"><span class="agent">"Completely understand. The carrier requires it to check your medical and prescription history through the MIB and prevent fraud so no one can sign up in your name. Does that make sense? Go ahead with the Social."</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ Second pushback</div>
+      <div class="line"><span class="agent">"We carry insurance ourselves — if anyone were to get through all of our security and access your information, you'd be covered up to a million dollars. That should give you enough peace of mind, right? Go ahead with the Social."</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ Still resistant — send license verification</div>
+      <div class="line"><span class="agent">"I just texted you a link to the Department of Insurance so you can look up my license. Let me know when you get it."</span></div>
+      <div class="line direction">Link: https://sbs.naic.org/solar-external-lookup</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Banking — Routing & Account Number</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"For your premiums each month — are we using a traditional bank or a credit union?"</span></div>
+      <div class="line"><span class="agent">"What bank do you use?"</span></div>
+      <div class="line"><span class="agent">"Let me pull up your routing number… while I do that, go ahead and grab your mobile banking app, a voided check, or a bank statement so we can confirm together."</span></div>
+      <div class="line direction">(Google the routing number while staying on the call.)</div>
+      <div class="line"><span class="agent">"I have your routing number as [Routing Number] — is that correct?"</span></div>
+      <div class="line"><span class="agent">"Perfect — go ahead with the account number."</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ First pushback on banking</div>
+      <div class="line"><span class="agent">"The carrier requires this to verify there's no fraud linked to the account — and that's how the policy gets paid once you're approved. The routing number for your [Bank] is [Routing Number] — is that correct? Go ahead with the account number."</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ Second pushback on banking</div>
+      <div class="line"><span class="agent">"We're not charging anything right now — the carrier just needs this to verify eligibility. These numbers are on the bottom of every check you've ever written to anyone. This is fully secure, and I have a fiduciary obligation to act in your best interest."</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">First Premium Scheduling</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"The first premium of [Amount] will come out within the first 24 to 48 hours of approval. After that, it's scheduled to draft on the [Date] of every month. Does that work for you?"</span></div>
+      <div class="line"><span class="agent">"And unlike a lot of policies with a two-year waiting period — this is day-one coverage. Once that first payment goes through, if something were to happen the next day, this policy pays out in full."</span></div>
+    </div>
+  </div>
+
+  <div class="route-strip">
+    <span class="route">All compliance info collected → Tab ⑧ Close & Tie-Down</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 8: CLOSE -->
+<div class="tab-panel" id="tab-close">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Phase 8 · Retention & Anchor</div>
+    <div class="phase-title">Tie-Down & Close</div>
+    <div class="phase-rule">You worked too hard to close this and lose it to a cancellation. Every step, every time. The tie-down is your persistency protection.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Sustainability Drill — Before You Hang Up</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Now — this option you picked. It's 100% sustainable for you, right?"</span></div>
+      <div class="line"><span class="client">"Yes, we can handle it."</span></div>
+      <div class="line"><span class="agent">"It won't take any food off the table?"</span></div>
+      <div class="line"><span class="client">"No, we're fine."</span></div>
+      <div class="line"><span class="agent">"If a washing machine broke down tomorrow — this wouldn't be the first thing to go?"</span></div>
+      <div class="line"><span class="client">"Right, this would stay."</span></div>
+      <div class="line"><span class="agent">"You're fully confident this is manageable for years to come?"</span></div>
+      <div class="line direction">(Get a firm yes on all three. This conversation protects your persistency.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Deliver the News</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"[Client Name] — I've got some good news and some bad news. Which do you want first?"</span></div>
+      <div class="line direction">(They'll usually say good news.)</div>
+      <div class="line"><span class="agent">"Bad news — looks like you're stuck with me going forward."</span> <span class="direction">(Light laugh.)</span> <span class="agent">"Good news — you've been fully approved. Congratulations."</span></div>
+      <div class="line direction">(Send a text image of the approval immediately. Have them save your number.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">5-Step Post-Close — Every Time, No Exceptions</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Save Contact</div>
+        <div class="line"><span class="agent">"Make sure you have my number saved in your phone right now."</span></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Anchor the Decision</div>
+        <div class="line"><span class="agent">"Tell me — in your own words — what did you just get set up today?"</span></div>
+        <div class="line direction">(Have them repeat back what they bought. This is your buyer's remorse shield.)</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Policy Name Clarification</div>
+        <div class="line"><span class="agent">"When your policy arrives — it won't say 'Mortgage Protection.' It will say 'Life Insurance.' Don't be alarmed — that's your coverage."</span></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Security Code</div>
+        <div class="line"><span class="agent">"I'm giving you a security code right now. Write this down. If anyone calls claiming to be me or from my office and doesn't have this code — hang up immediately. They are not with us."</span></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">Beneficiary + Policy Review</div>
+        <div class="line"><span class="agent">"Please make sure [Beneficiary] has my contact information. God forbid when something happens — I'm the one who's going to make sure your family is taken care of and paid out fast."</span></div>
+        <div class="line"><span class="agent">"I'll check back in with you in a year to go over your benefits. If you need anything before then — call or text me directly."</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Scenario Recaps — Use the One That Fits</div>
+    <div class="branch">
+      <div class="branch-label">→ Husband & Wife / Income Risk</div>
+      <div class="line"><span class="agent">"So just to recap — if either one of you were to get sick or disabled and lose that income, you'd likely be in a position where you'd have to sell the home or take on extra work just to keep things afloat. That's the gap we just protected."</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ Single Individual</div>
+      <div class="line"><span class="agent">"So just to recap — there wasn't anything in place if you were to get sick or disabled and couldn't work. Without that income, it would've been tough to keep the home long-term. That's what we just took care of."</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ Retired Couple / Probate Risk</div>
+      <div class="line"><span class="agent">"The gap we identified is what happens when one of you passes. Probate can take 6 to 12 months. During that time, the mortgage is still due. That's the risk we just protected against."</span></div>
+    </div>
+  </div>
+
+  <div class="route-strip">
+    <span class="route">Tie-down complete → Tab ⑨ Referrals — run before hanging up</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 9: REFERRALS -->
+<div class="tab-panel" id="tab-referrals">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Phase 9 · Pipeline Engine</div>
+    <div class="phase-title">Referral System</div>
+    <div class="phase-rule">Never hang up without attempting this. Every closed client is your warmest next lead. The emergency contact framing removes all social friction.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Emergency Contact List — The Entry Point</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"[Client Name] — one more thing before we wrap up. The office now requires us to put an emergency contact list on file for every policy — because last year alone there was over $7 billion in unclaimed life insurance in this country. We don't want yours to be part of that."</span></div>
+      <div class="line"><span class="agent">"What I need is five people — name, relationship, and phone number — that I can contact if something happens to you, to make sure your family gets paid out quickly."</span></div>
+      <div class="line direction">(Collect: Full name, relationship, phone number, state they live in. Five contacts total.)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Group Text Setup — Do This While On the Call</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Perfect — I just shot you a text. Go ahead and copy, paste, and send that to the five people we just listed."</span></div>
+    </div>
+    <div class="info-box">
+      <strong>📋 Text for Client to Copy and Send</strong>
+      "Hey — I just put you down as one of my emergency contacts on my life insurance policy. My underwriter [Your Name] is going to give you a quick call to run a couple things by you. His number is [Your Number] — save it so you know it's him when he calls."
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">When You Call Each Contact</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Hey [Contact Name] — this is [Your Name], calling about the policy I helped set up for [Client Name]. He/she listed you as a beneficiary and emergency contact — did they let you know about this?"</span></div>
+      <div class="line"><span class="agent">"So you are listed as a beneficiary — I'm required to give you a quick call so you have my contact info. God forbid when something happens, you'll know exactly who to call and I can get the claim expedited."</span></div>
+      <div class="line"><span class="agent">"This is my personal number — please save it right now: [Your Number]."</span></div>
+      <div class="line"><span class="agent">"I was talking with [Client Name] and they didn't mention whether you have your own coverage set up. Have you gotten that taken care of?"</span></div>
+      <div class="line direction">(If no: "Not a problem — I actually have about 10 minutes before my next call. Do you have a pen and paper?")</div>
+      <div class="line direction">(If yes: "Got it — who are you set up with? Let me check and see if there are better options available for you.")</div>
+      <div class="route">Run the full call from Tab ① Hook with this new lead</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Referral Ask — After Emergency Contacts</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"On a scale of 1 to 10 — how much would you say I helped you today?"</span></div>
+      <div class="line"><span class="client">"Probably a 9 or 10."</span></div>
+      <div class="line"><span class="agent">"I appreciate that. Since you trusted me — it sounds like you'd trust me to help someone else the same way. Would you be opposed to referring 3 to 5 people so I can do the same for their families?"</span></div>
+      <div class="line"><span class="agent">"Actually — even better. Go ahead and plug me into a group chat with them right now. I'll tell you exactly what to say."</span></div>
+    </div>
+    <div class="info-box">
+      <strong>📋 Group Chat Message for Client to Send</strong>
+      "Hey — I just talked with [Your Name] about protecting the house and covering everything if something happens to me. He was super helpful and showed me a few solid options. Thought you might want to connect with him and take a look."
+    </div>
+  </div>
+
+  <div class="route-strip">
+    <span class="route">Each beneficiary contact → New call, run from Tab ① Hook</span>
+    <span class="route">Referral received → Log in GHL immediately, schedule follow-up</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 10: APPT FALLBACK -->
+<div class="tab-panel" id="tab-appt">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Phase 10 · Fallback Only</div>
+    <div class="phase-title">Appointment Booking</div>
+    <div class="phase-rule">Only use when you genuinely cannot one-call close. Always go for the one-call first. Never book more than 24 hours out. Never book a one-legger.</div>
+  </div>
+
+  <div class="warn-box">
+    <strong>⚡ One-Legger Rule</strong>
+    Never book without confirming the spouse or decision-maker will be present. A one-legger almost always reschedules or cancels. Confirm both before locking in the time.
+  </div>
+
+  <div class="section">
+    <div class="section-title">Appointment Booking Script</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Perfect — I typically run by appointment only anyway. Let me see where I can squeeze you in."</span></div>
+      <div class="line direction">(Act busy. You have families to get to.)</div>
+      <div class="line"><span class="agent">"Are you married, single, or somewhere in between?"</span></div>
+      <div class="line direction">(If spouse: "I'll need to speak with both of you — this is the most important plan your family will have.")</div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ Younger / Working</div>
+      <div class="line"><span class="agent">"Do you work a typical 9 to 5, or do your hours vary?"</span></div>
+      <div class="line"><span class="agent">"What's the latest you and [Spouse] will be home today?"</span></div>
+    </div>
+    <div class="branch">
+      <div class="branch-label">→ Older / Retired</div>
+      <div class="line"><span class="agent">"Are you still working or are you retired?"</span></div>
+      <div class="line"><span class="agent">"Tomorrow — any doctor appointments, lunches with the grandkids, anything going on?"</span></div>
+    </div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Okay — unfortunately I don't have that exact time, but I can squeeze you in between [Time A] and [Time B]. Any reason that wouldn't work for both of you?"</span></div>
+      <div class="line direction">(Only throw out times when you know for sure they'll be home.)</div>
+      <div class="line"><span class="agent">"Perfect — how do you keep track of your appointments?"</span></div>
+      <div class="line direction">(Have them write: your name, appointment time, and security code.)</div>
+      <div class="line"><span class="agent">"I have you down for [Date & Time]. Any reason you wouldn't be there?"</span></div>
+      <div class="line"><span class="agent">"The reason I ask — I have a full day of helping families and when someone misses their appointment it really throws off my schedule. I'm counting on you being there."</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Reschedule Script</div>
+    <div class="script-block">
+      <div class="line"><span class="agent">"Not a problem — is it still important to you to make sure you have something in place for [Beneficiary]?"</span></div>
+      <div class="line"><span class="agent">"On a scale of 1 to 10 — how important is getting this handled right now?"</span></div>
+      <div class="line direction">(If below 7 — re-anchor to the why before booking. Don't rebook a low-urgency lead without re-committing them first.)</div>
+      <div class="line"><span class="agent">"Usually when people push it out a week, it just keeps getting delayed. Would tomorrow or the next day be easier so we can just get this handled?"</span></div>
+      <div class="line direction">(Always give two specific time options. Never ask "when are you free?")</div>
+    </div>
+  </div>
+
+  <div class="route-strip">
+    <span class="route">Appointment confirmed → At call time, open with Tab ① Hook and run full script</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ TAB 11: CHEAT SHEET -->
+<div class="tab-panel" id="tab-cheatsheet">
+  <div class="phase-header">
+    <div class="phase-eyebrow">Quick Reference</div>
+    <div class="phase-title">⚡ Cheat Sheet</div>
+    <div class="phase-rule">Full call skeleton. Every key line, every pivot. One screen. Keep this open on your iPad during every dial session.</div>
+  </div>
+
+  <div class="cheat-grid">
+
+    <div class="cheat-card cheat-card-full">
+      <div class="cheat-card-title">Hook Opener — First 4 Lines Verbatim</div>
+      <p class="agent">"[Client Name]? It's [Your Name]. I manage the brokerage that handles all of the mortgage protection files for [Lender / County]. Your file associated with your property on [Street Name] just came across my desk."</p>
+      <p class="agent">"You still reside there?"</p>
+      <p class="agent">"So you probably remember we sent you some things in the mail about the mortgage protection — the coverage that pays off or down your loan if you get sick, disabled, or pass away. One of my underwriters should've helped you with this, but I'm not seeing any notes on your file."</p>
+      <p class="agent">"So as the manager I'm doing a courtesy call — do you remember what happened with the mortgage protection?"</p>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-card-title">NEPQ Pivots — In Your Own Words</div>
+      <ul class="checklist" style="list-style:none;padding:0">
+        <li>If something happened to you — what actually happens to the mortgage?</li>
+        <li>Who would be responsible for it? How would they handle that?</li>
+        <li>How long could they realistically keep up the payments?</li>
+        <li>And if they couldn't — what happens to the house?</li>
+        <li>On a scale of 1–10, how concerned does that make you?</li>
+      </ul>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-card-title">Framework Dig Deep Triggers</div>
+      <ul class="checklist" style="list-style:none;padding:0">
+        <li>"They'd figure it out" → "What do you mean exactly?"</li>
+        <li>"Family would help" → "Would you rather leave them a check or a bill?"</li>
+        <li>"I have savings" → "How long? And after that — what?"</li>
+        <li>"They'd sell" → "Is that what you'd actually want for them?"</li>
+        <li>They say "probably" → Repeat it: "Probably?" → "So not 100%?"</li>
+      </ul>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-card-title">Commitment Check — Before the Hold</div>
+      <p class="agent">"Would you say getting something in place for [Beneficiary] is more of a necessity than a luxury?"</p>
+      <p style="color:var(--red);font-weight:600;margin-top:8px;font-size:12px">→ DO NOT present options until they say yes. If they won't commit — dig back into the Why.</p>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-card-title">Top 8 Objection One-Liners</div>
+      <ul class="checklist" style="list-style:none;padding:0">
+        <li><span class="objection">Not interested</span> → Pain redirect → "Price or don't qualify?"</li>
+        <li><span class="objection">Don't remember</span> → "I forget breakfast — grab a pen."</li>
+        <li><span class="objection">Already have coverage</span> → Flip: "Which carrier? How much? What are you paying?"</li>
+        <li><span class="objection">Too expensive</span> → "Looks like you were quoted high — I'm here to fix that."</li>
+        <li><span class="objection">Work insurance</span> → "Day you leave that job, all of it disappears."</li>
+        <li><span class="objection">Need to think</span> → "Thinking whether to do it at all — or just which option?"</li>
+        <li><span class="objection">Just send info</span> → "File is incomplete — I need to cover it first."</li>
+        <li><span class="objection">Sounds like scam</span> → "I'll verify my license right now — texting you the link."</li>
+      </ul>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-card-title">Silent Close Cue</div>
+      <p class="agent">"Now — I'm the initial underwriter, not the final decision. That's up to [Carrier]. But if I'm able to get you approved — which one of those would make the most sense for you and your family?"</p>
+      <p style="color:var(--red);font-weight:600;margin-top:10px">→ STOP TALKING. First person to speak loses the close.</p>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-card-title">Application Pivot</div>
+      <p class="agent">"Okay — the way these companies verify your identity and pull your medical records is through your Social. Go ahead with that whenever you're ready."</p>
+      <p style="margin-top:8px;color:var(--text-dim);font-size:12px">Then: routing → account number. You planted this in the Intro — collect it calmly.</p>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-card-title">Sustainability Drill</div>
+      <p class="agent">"This option — it's 100% sustainable for you, right?"</p>
+      <p class="agent">"It won't take any food off the table?"</p>
+      <p class="agent">"If something broke down tomorrow — this wouldn't be the first thing to go?"</p>
+      <p style="margin-top:8px;color:var(--text-dim);font-size:12px">Get a firm yes on all three. Protects your persistency.</p>
+    </div>
+
+    <div class="cheat-card cheat-card-full">
+      <div class="cheat-card-title">Call Flow at a Glance</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px">
+        <span style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--green);font-family:'JetBrains Mono',monospace;">① Hook</span>
+        <span style="color:var(--orange)">→</span>
+        <span style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--green);font-family:'JetBrains Mono',monospace;">② Intro</span>
+        <span style="color:var(--orange)">→</span>
+        <span style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--green);font-family:'JetBrains Mono',monospace;">③ Inventory</span>
+        <span style="color:var(--orange)">→</span>
+        <span style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--green);font-family:'JetBrains Mono',monospace;">④ Build Why</span>
+        <span style="color:var(--orange)">→</span>
+        <span style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--orange);font-family:'JetBrains Mono',monospace;">COMMIT GATE</span>
+        <span style="color:var(--orange)">→</span>
+        <span style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--green);font-family:'JetBrains Mono',monospace;">⑤ Options</span>
+        <span style="color:var(--orange)">→</span>
+        <span style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--red);font-family:'JetBrains Mono',monospace;">⑥ Objections</span>
+        <span style="color:var(--orange)">→</span>
+        <span style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--green);font-family:'JetBrains Mono',monospace;">⑦ Application</span>
+        <span style="color:var(--orange)">→</span>
+        <span style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--green);font-family:'JetBrains Mono',monospace;">⑧ Close</span>
+        <span style="color:var(--orange)">→</span>
+        <span style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--purple);font-family:'JetBrains Mono',monospace;">⑨ Referrals</span>
+      </div>
+      <p style="margin-top:10px;color:var(--text-muted);font-size:12px">Objection at any point → Tab ⑥ → handle → return to where you left off. Appointment fallback → Tab ⑩.</p>
+    </div>
+
+    <div class="cheat-card cheat-card-full" style="border-color:rgba(61,214,140,0.2)">
+      <div class="cheat-card-title" style="color:var(--green)">⚡ Framework Activity Anchor — Monday Targets</div>
+      <div class="activity-bar">
+        <div class="activity-pill"><span>200+</span> Dials / Day</div>
+        <div class="activity-pill"><span>1,200+</span> Dials / Week</div>
+        <div class="activity-pill"><span>40</span> Appts / Week</div>
+        <div class="activity-pill"><span>10</span> Presentations / Day</div>
+        <div class="activity-pill"><span>25–30%</span> Close Rate Target</div>
+        <div class="activity-pill"><span>$15k+</span> Premium / Week</div>
+      </div>
+      <p style="margin-top:12px;color:var(--text-muted);font-size:12px">Activity is the answer to everything. When in doubt — dial. Track every number: dials, contacts, appointments, closes, premium. You cannot improve what you don't measure.</p>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- end .content -->
+
+<script>
+  function showTab(id) {
+    if (document.body.classList.contains('study-mode')) return;
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('tab-' + id);
+    if (panel) panel.classList.add('active');
+    const btn = document.querySelector('[onclick="showTab(\'' + id + '\')"]');
+    if (btn) {
+      btn.classList.add('active');
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }
+
+  function setMode(mode) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector('[onclick="setMode(\'' + mode + '\')"]');
+    if (btn) btn.classList.add('active');
+    if (mode === 'study') {
+      document.body.classList.add('study-mode');
+      document.querySelectorAll('.tab-btn').forEach(b => b.disabled = true);
+    } else {
+      document.body.classList.remove('study-mode');
+      document.querySelectorAll('.tab-btn').forEach(b => b.disabled = false);
+      showTab('hook');
+    }
+  }
+</script>
+
+</body>
+</html>
