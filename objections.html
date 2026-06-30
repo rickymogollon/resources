@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omerta — Objections Trainer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+  :root {
+    --bg: #111318; --surface: #1a1c22; --surface2: #20232a; --surface3: #262930;
+    --border: #2a2d35; --border2: #353840; --text: #f0f0f2; --dim: #9098a8; --muted: #4a5060;
+    --purple: #c9aaff; --red: #ff6060; --green: #3dd68c; --blue: #7ab3ff; --yellow: #ffe066; --value: #5fefb8;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; font-size:15px; line-height:1.9; min-height:100vh; }
+  .topbar { position:sticky; top:0; z-index:100; background:#0d0f14; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 16px; height:50px; gap:10px; }
+  .logo { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:var(--green); letter-spacing:.12em; text-transform:uppercase; white-space:nowrap; flex-shrink:0; }
+  .mode-wrap { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:2px; gap:2px; flex-shrink:0; }
+  .mode-btn { padding:4px 10px; border:none; background:transparent; color:var(--muted); font-family:'Inter',sans-serif; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; border-radius:4px; cursor:pointer; transition:all .15s; white-space:nowrap; }
+  .mode-btn.active { background:var(--surface3); color:var(--text); border:1px solid var(--border2); }
+  .tabnav { display:flex; gap:2px; overflow-x:auto; scrollbar-width:none; flex:1; }
+  .tabnav::-webkit-scrollbar { display:none; }
+  .tab-btn { padding:5px 12px; border:none; background:transparent; color:var(--muted); font-family:'Inter',sans-serif; font-size:12px; font-weight:600; border-radius:5px; cursor:pointer; white-space:nowrap; transition:all .15s; flex-shrink:0; }
+  .tab-btn:hover { background:var(--surface2); color:var(--dim); }
+  .tab-btn.active { background:var(--surface2); color:var(--text); border:1px solid var(--border2); }
+  body.call .study-only { display:none; }
+  .content { max-width:820px; margin:0 auto; padding:24px 16px 120px; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+  .ph { margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+  .ph-ey { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+  .ph-ti { font-size:22px; font-weight:700; letter-spacing:-.02em; margin-bottom:6px; }
+  .ph-ru { font-size:13px; color:var(--dim); border-left:3px solid var(--border2); padding-left:12px; line-height:1.6; }
+  .leg { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:20px; padding:10px 14px; background:var(--surface); border:1px solid var(--border); border-radius:8px; }
+  .li { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--dim); font-family:'JetBrains Mono',monospace; }
+  .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .mode-hint { font-size:12px; color:var(--muted); margin-bottom:18px; font-style:italic; line-height:1.6; }
+
+  .obj { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:0; margin-bottom:14px; overflow:hidden; }
+  .obj-head { background:var(--surface2); border-bottom:1px solid var(--border); padding:13px 16px; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .obj-tag { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--bg); background:var(--red); padding:2px 7px; border-radius:4px; flex-shrink:0; }
+  .obj-tag.spec { background:var(--purple); }
+  .obj-tag.stall { background:var(--yellow); }
+  .obj-trig { font-size:15.5px; font-weight:700; color:var(--text); }
+  .obj-body { padding:14px 16px; }
+
+  .read { background:#0e1318; border:1px solid #1e2a3a; border-left:3px solid var(--blue); border-radius:8px; padding:11px 14px; margin-bottom:12px; font-size:13.5px; color:var(--dim); line-height:1.6; }
+  .read strong { display:block; color:var(--blue); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; margin-bottom:5px; font-weight:700; }
+
+  .say-label { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .ln { margin-bottom:8px; font-size:15px; line-height:1.75; }
+  .ln:last-child { margin-bottom:0; }
+  .p { color:var(--purple); font-weight:500; }
+  .r { color:var(--red); font-weight:500; }
+  .g { color:var(--green); font-weight:500; }
+  .b { color:var(--blue); font-weight:500; }
+  .v { color:var(--value); }
+  .cl { color:var(--dim); font-style:italic; }
+  .pau { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; color:var(--yellow); background:#1e1a00; border:1px solid #3d3300; border-radius:3px; padding:1px 5px; text-transform:uppercase; margin:0 2px; vertical-align:middle; }
+  .dn { color:var(--dim); font-style:italic; font-size:13px; border-left:2px solid var(--border2); padding-left:8px; margin:6px 0; line-height:1.5; }
+
+  .why { background:#14101c; border:1px solid #2e2440; border-left:3px solid var(--purple); border-radius:8px; padding:12px 15px; margin-top:13px; font-size:13.5px; color:#cdbfe6; line-height:1.65; }
+  .why strong { display:block; color:var(--purple); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+
+  .esc { margin:12px 0 4px; display:flex; flex-direction:column; gap:8px; }
+  .esc-step { display:flex; gap:11px; align-items:flex-start; }
+  .esc-num { flex:0 0 auto; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:var(--green); background:#0e2018; border:1px solid #1e3525; border-radius:5px; padding:3px 7px; margin-top:2px; }
+  .branch { background:var(--surface2); border:1px solid var(--border); border-left:3px solid var(--muted); border-radius:8px; padding:10px 13px; margin:8px 0; }
+  .branch.gr { border-left-color:var(--green); }
+  .branch.bl { border-left-color:var(--blue); }
+  .branch.rd { border-left-color:var(--red); }
+  .branch-lbl { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); margin-bottom:6px; }
+
+  .princ { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:15px 17px; margin-bottom:10px; }
+  .princ-t { font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; }
+  .princ-t .k { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--green); background:#0e2018; border:1px solid #1e3525; border-radius:4px; padding:2px 6px; margin-right:8px; vertical-align:middle; letter-spacing:.06em; text-transform:uppercase; }
+  .princ-d { font-size:13.5px; color:var(--dim); line-height:1.65; }
+  .princ-d strong { color:var(--text); }
+
+  .otw { overflow-x:auto; margin-bottom:8px; }
+  .ot { width:100%; border-collapse:collapse; font-size:13px; }
+  .ot th { background:var(--surface2); color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:9px 11px; border:1px solid var(--border); text-align:left; }
+  .ot td { padding:9px 11px; border:1px solid var(--border); vertical-align:top; color:var(--dim); line-height:1.55; }
+  .ot tbody tr:nth-child(even) td { background:var(--surface); }
+  .ot td:first-child { color:var(--red); font-weight:600; font-size:12px; white-space:nowrap; }
+  .dv { border:none; border-top:1px solid var(--border); margin:10px 0; }
+</style>
+</head>
+<body class="study">
+<div class="topbar">
+  <div class="logo">Omerta &middot; Objections</div>
+  <div class="mode-wrap">
+    <button class="mode-btn" onclick="setMode('call')">Call</button>
+    <button class="mode-btn active" onclick="setMode('study')">Study</button>
+  </div>
+  <div class="tabnav">
+    <button class="tab-btn active" onclick="showTab('princ')">&#9733; Principles</button>
+    <button class="tab-btn" onclick="showTab('opener')">&#9312; Opener</button>
+    <button class="tab-btn" onclick="showTab('closing')">&#9313; Closing</button>
+    <button class="tab-btn" onclick="showTab('coverage')">&#9314; Coverage</button>
+    <button class="tab-btn" onclick="showTab('specialty')">&#9315; Specialty</button>
+    <button class="tab-btn" onclick="showTab('cheat')">&#9889; Quick Grid</button>
+  </div>
+</div>
+<div class="content">
+
+<!-- ============ PRINCIPLES ============ -->
+<div class="tab-panel active" id="tab-princ">
+  <div class="ph"><div class="ph-ey">Read First</div><div class="ph-ti">The Principles Behind Every Rebuttal</div><div class="ph-ru">Memorizing lines gives you words. Understanding these gives you conviction. Every rebuttal in this file runs on one or more of these &mdash; learn the principle and you can handle an objection you've never heard before.</div></div>
+
+  <div class="princ"><div class="princ-t"><span class="k">01</span>An objection is a request for clarity, not a no</div>
+    <div class="princ-d">Early in the call, "no" almost never means "I've weighed this and decided against it" &mdash; they haven't heard anything to decide on yet. It means "I'm braced to be sold." So you don't fight the words. You lower the guard, then redirect to a question that makes them think instead of react. <strong>You're not overcoming resistance &mdash; you're dissolving the reason for it.</strong></div>
+  </div>
+  <div class="princ"><div class="princ-t"><span class="k">02</span>Acknowledge &rarr; Neutralize &rarr; Redirect</div>
+    <div class="princ-d">The shape of nearly every rebuttal. <strong>Acknowledge</strong> so they feel heard ("that's fair," "I hear you") &mdash; this drops their defenses. <strong>Neutralize</strong> the objection with a fact or reframe. <strong>Redirect</strong> back to their why with a question. Never argue, never defend &mdash; arguing makes them dig in, defending makes you look guilty.</div>
+  </div>
+  <div class="princ"><div class="princ-t"><span class="k">03</span>Always end on a question</div>
+    <div class="princ-d">Whoever is asking the questions controls the conversation. If you end a rebuttal on a statement, you hand them the wheel and the silence to say no again. End on a question and they're answering &mdash; which means they're engaged, and you're still driving.</div>
+  </div>
+  <div class="princ"><div class="princ-t"><span class="k">04</span>Isolate before you solve</div>
+    <div class="princ-d">Especially at the close. "I need to think about it" and "it's too expensive" each hide two completely different objections. Solve the wrong one and you lose the deal while looking like you handled it. <strong>First find out what the objection actually is</strong> &mdash; then solve that, and only that.</div>
+  </div>
+  <div class="princ"><div class="princ-t"><span class="k">05</span>The file frame &mdash; you're closing a file, not selling</div>
+    <div class="princ-d">Everything routes back to "I see that on your file." You're not a telemarketer making a pitch &mdash; you're the manager handling a flagged file they're already attached to. This frame is what gives you authority, and it's why "take me off your list" and "are you selling something" fall apart: there's nothing to opt out of, because it's <strong>their</strong> request.</div>
+  </div>
+  <div class="princ"><div class="princ-t"><span class="k">06</span>Never apologize, never seek permission</div>
+    <div class="princ-d">No "I'm sorry," no "I'm sorry you're confused," no "can I," no "would it be okay." Apologizing concedes you did something wrong &mdash; you didn't. Permission-seeking signals you don't belong in the conversation. Lead with calm authority. The manager handling their file doesn't apologize for calling.</div>
+  </div>
+  <div class="princ"><div class="princ-t"><span class="k">07</span>Three objections, then move on &mdash; abundance</div>
+    <div class="princ-d">If you get three real objections in a row, disposition and dial the next lead. Not because you can't win &mdash; because your time is worth more on someone ready. Scarcity makes you push and sound desperate. Abundance keeps your tone calm, and calm is what closes. The next lead is always right there.</div>
+  </div>
+  <div class="princ"><div class="princ-t"><span class="k">08</span>Silence is a tool, not a gap to fill</div>
+    <div class="princ-d">After a real question &mdash; especially at the close &mdash; stop talking. The first person to speak loses. The silence pressures <strong>them</strong>, and whatever they say to break it is usually the real objection you can finally handle. Fill the silence yourself and you've answered your own question for them, badly.</div>
+  </div>
+</div>
+
+<!-- ============ OPENER ============ -->
+<div class="tab-panel" id="tab-opener">
+  <div class="ph"><div class="ph-ey">Phase 1 &middot; Before the Hook Lands</div><div class="ph-ti">Opener Objections</div><div class="ph-ru">These hit in the first 30 seconds &mdash; reflex resistance from someone who doesn't know what you want yet. Stay calm, acknowledge, redirect to the address or the consequence. Don't sell, just keep the file open.</div></div>
+  <div class="leg">
+    <div class="li"><div class="dot" style="background:var(--purple)"></div>chill / blas&eacute;</div>
+    <div class="li"><div class="dot" style="background:var(--red)"></div>confused / assertive</div>
+    <div class="li"><div class="dot" style="background:var(--green)"></div>authority</div>
+    <div class="li"><div class="dot" style="background:var(--blue)"></div>question</div>
+    <div class="li"><div class="dot" style="background:var(--value)"></div>value statement</div>
+  </div>
+  <div class="mode-hint study-only">Study mode &mdash; everything's visible. Tap <strong>Call</strong> up top to strip it down to just the lines for live dialing.</div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Opener</span><span class="obj-trig">"I'm not interested."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> Pure reflex. They haven't heard the idea yet, so they're not rejecting it &mdash; they're rejecting being sold. Don't fight it. Acknowledge, then redirect. Three escalation levels, then move on.</div>
+      <div class="say-label">Say</div>
+      <div class="esc">
+        <div class="esc-step"><span class="esc-num">1st</span><div><div class="ln"><span class="g">"Understood &mdash; I'll get the file updated here."</span> <span class="p">"Just so you're aware, this is the only coverage that pays the home loan if you become sick or pass away."</span> <span class="b">"What would it look like for your family to cover the bills without your income?"</span></div></div></div>
+        <div class="esc-step"><span class="esc-num">2nd</span><div><div class="ln"><span class="p">"I'm assuming when you submitted this request, you just wanted to make sure the home was taken care of for your family &mdash; God forbid you become sick, disabled, or pass away. Is that fair?"</span></div></div></div>
+        <div class="esc-step"><span class="esc-num">3rd</span><div><div class="ln"><span class="g">"Okay &mdash; are you more concerned the price is going to be too high, or that you might not qualify?"</span></div>
+          <div class="branch rd"><div class="branch-lbl">If price</div><div class="ln"><span class="r">"I see that on your file &mdash; looks like you were quoted some steep numbers by one of my reps. I'm the manager for the [COUNTY/CITY] area, assigned to find more affordable options that fit your budget."</span></div></div>
+          <div class="branch rd"><div class="branch-lbl">If won't qualify</div><div class="ln"><span class="r">"I see that on your file. I'm the senior underwriter assigned to find options you will qualify for."</span></div></div>
+        </div></div>
+      </div>
+      <div class="dn">After 3 &rarr; disposition and move on. Abundance.</div>
+      <div class="why study-only"><strong>Why it works</strong> Each level narrows the objection. Level 1 redirects raw reflex into a consequence they can't auto-answer. Level 2 puts words in their mouth they have to agree with &mdash; reminding them they <em>did</em> ask for this. Level 3 collapses every vague "not interested" into the only two fears that actually exist: it costs too much, or I won't get approved. Both are solvable, and naming them turns a wall into a door.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Opener</span><span class="obj-trig">"I don't remember filling anything out."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> This isn't about memory &mdash; it's "I don't trust where you got my info." Argue the lead and you lose. Disarm the suspicion, then re-establish where the file came from without getting defensive.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="p">"Did maybe your spouse or a family member fill it out?"</span> <span class="pau">pause</span></div>
+      <div class="ln"><span class="p">"That's okay &mdash; honestly, if you're anything like me, I can't even remember what I had for breakfast."</span> <span class="pau">pause</span></div>
+      <div class="ln"><span class="p">"What I can tell you is your property on [STREET] showed up in our system when [LENDER] processed the loan &mdash; that's how your file got assigned to my desk."</span></div>
+      <div class="ln"><span class="b">"Either way &mdash; you're still there at [ADDRESS]?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> The breakfast line is the move &mdash; self-deprecating humor removes the need for anyone to be right, which defuses the suspicion without challenging it. Then the file frame ("showed up when the lender processed the loan") re-legitimizes you with a concrete origin story instead of an argument. The address question pulls them back into process before they can re-object.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Opener</span><span class="obj-trig">"We took care of all this at closing."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They're confusing the mortgage itself with mortgage protection. Don't correct them like they're wrong &mdash; agree, then separate the two with a fact that makes you the expert.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Correct &mdash; you took care of your mortgage at closing. But I'm calling about the mortgage protection &mdash; that's different."</span></div>
+      <div class="ln"><span class="v">"The banks used to offer this before 2008, but now it's contracted out directly to the insurance carriers &mdash; which is who I work with. It's my job as the underwriter to run it through the various companies and figure out which product makes the most sense for you and your family."</span></div>
+      <div class="ln"><span class="b">"Make sense?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> Agreeing first ("correct, you took care of the mortgage") means there's nothing to argue about &mdash; you're on the same side. The 2008 rule change is a credibility anchor: a specific, verifiable historical fact that reframes you from caller to authority. And it quietly flips the value &mdash; under the old system the bank was the beneficiary; now <em>their family</em> is.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Opener</span><span class="obj-trig">"We don't have that lender anymore."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They think a changed lender means the coverage is irrelevant. It isn't &mdash; the coverage follows the homeowner, not the loan. But you don't lecture them on that. You agree, explain the pending file, confirm the address, re-anchor the value.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Correct &mdash; that's actually the reason for my call. I see that on your file &mdash; that's probably why it's still showing as pending and slipped through the cracks on our end."</span></div>
+      <div class="ln"><span class="b">"Just to confirm I'm speaking with the right person &mdash; the address we have on file for the mortgage is [ADDRESS]?"</span></div>
+      <div class="ln"><span class="p">"So as you may recall &mdash; this is the coverage that takes care of the home if you get sick, become disabled, or pass away. Make sense?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> You turn their objection into <em>your</em> reason for calling &mdash; "that's exactly why it's still pending" &mdash; so the thing meant to end the call becomes the thing that justifies it. Confirming the address regains control and verifies you've got the right person. Note: no apology. The original script said "I apologize" here &mdash; cut it. Apologizing hands them the upper hand; the manager handling their file has nothing to be sorry for.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Opener</span><span class="obj-trig">"What company are you with?"</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> A legitimacy probe, not hostility. They want to know you're real. Answer with specificity &mdash; vagueness reads as a scam, detail reads as an expert.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Great question. I'm an independent underwriter licensed through the state of [STATE] &mdash; which means I'm not captive to one company."</span></div>
+      <div class="ln"><span class="g">"I work with the top 30 A and A+ rated carriers in the state, including Mutual of Omaha, National Life Group, and Transamerica."</span></div>
+      <div class="ln"><span class="b">"Does that make sense?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> Naming real, recognizable carriers is the proof &mdash; a scammer wouldn't, and couldn't, rattle off A-rated names. "Independent, not captive" also positions you as working for <em>them</em> across the whole market, not pushing one company's product. Specificity is the antidote to suspicion.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Opener</span><span class="obj-trig">"Take me off your list."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They think this is cold spam. The reframe destroys that frame in one line &mdash; there is no list, this was their own request.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"To be straight with you &mdash; there is no list. This is the request you submitted about protecting your family if you were to get sick, become disabled, or pass away."</span></div>
+      <div class="ln"><span class="b">"Anyway &mdash; the address we have on file for the home is [ADDRESS]?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> "Take me off the list" only works as an objection if there's a list to be on. Naming that there isn't &mdash; and that <em>they</em> submitted this &mdash; collapses the whole spam frame and puts ownership back on them. The original had "I'm sorry you're confused" &mdash; cut it. Apologizing half-concedes the spam frame you're trying to destroy. Straight to the address keeps momentum.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Opener</span><span class="obj-trig">"This sounds like a scam." / "Are you trying to sell me something?"</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They've been burned or are cautious. Defensiveness reads as guilt. Stay flat, redirect to the consequence, offer to be verified.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"It's not a scam to cover your mortgage loan with a life insurance policy &mdash; and my job as the underwriter is just to cover the proper information so we can close out the file."</span></div>
+      <div class="ln"><span class="b">"What would your family do if something happened to you and they no longer had your income?"</span></div>
+      <div class="ln"><span class="p">"This'll only take a few minutes &mdash; and I can verify my license through the state right now if that helps."</span></div>
+      <div class="why study-only"><strong>Why it works</strong> Offering to be verified is judo &mdash; only a real agent invites a background check, so the offer itself proves legitimacy more than any reassurance could. Staying calm (not defensive) signals you have nothing to hide. And redirecting to "what would your family do" moves them off suspicion and back onto the stakes.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Opener</span><span class="obj-trig">"Is this even required?"</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They're hunting for an out. Don't validate the frame with a flat "no." Act slightly thrown, then reframe with an analogy.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="cl">(act a little confused by the question)</span></div>
+      <div class="ln"><span class="g">"I mean&hellip; technically they won't take your home if you don't have it. But I'll tell you &mdash; you'd be one of the rare people without it in place. It's like driving a car without car insurance."</span></div>
+      <div class="ln"><span class="b">"Does that make sense?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> A flat "no, it's not required" hands them the exit. Acting mildly confused signals the question is almost odd &mdash; subtly reframing not-having-it as the strange choice. The car-insurance analogy borrows a belief they already hold (you'd never drive uninsured) and transfers it, so the conclusion feels like theirs, not yours.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Opener</span><span class="obj-trig">"I'm busy / at work / driving."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> Friction, not a real no. Match their pace, make it brief, get them writing &mdash; or show you care.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="p">"I'm really busy too &mdash; I've got a lot of families to get to. I'll make this brief. Go ahead and grab something to write with."</span></div>
+      <div class="branch bl"><div class="branch-lbl">If driving</div><div class="ln"><span class="p">"I don't want you getting in an accident &mdash; pull over real quick and I'll get your information pulled up."</span></div></div>
+      <div class="why study-only"><strong>Why it works</strong> "I'm busy too" matches their energy instead of begging for time &mdash; it keeps you the busy expert, not the needy salesperson. Getting them to grab a pen is a tiny commitment that flips them from blocking to participating. The "pull over" line builds rapport by showing you care about them, not just the sale.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Opener</span><span class="obj-trig">"I think I saw an ad for this."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They're picturing accidental-death ads. Clarify the difference, then let them self-select into real coverage.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"That's usually accidental coverage &mdash; it only pays out if you die in an accident."</span></div>
+      <div class="ln"><span class="b">"Were you looking for accidental-only, or did you want something that covers you for any cause of death?"</span></div>
+      <div class="ln"><span class="cl">&rarr; They'll say any cause. They've now self-qualified. Continue normally.</span></div>
+      <div class="why study-only"><strong>Why it works</strong> People commit to their own words far harder than to yours. By offering the choice &mdash; accidental-only vs. any cause &mdash; you let them say out loud that they want real coverage. Now it's their stated goal, not your pitch, and they've qualified themselves into the conversation.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CLOSING ============ -->
+<div class="tab-panel" id="tab-closing">
+  <div class="ph"><div class="ph-ey">Phase 2 &middot; At the Finish Line</div><div class="ph-ti">Closing Objections</div><div class="ph-ru">These hit after you've presented and asked for the decision. The rule here above all: <strong>isolate before you solve.</strong> Is the doubt about the product, or just about which option? Two different conversations.</div></div>
+  <div class="mode-hint study-only">Study mode. Tap <strong>Call</strong> to strip to just the lines.</div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag stall">Close Stall</span><span class="obj-trig">"I need to think about it."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> The single most important fork in the call. "Think about it" hides two opposite objections: <em>I don't want it at all</em> vs. <em>I want it but can't pick an option.</em> Solve the wrong one and you lose. Isolate first &mdash; every time.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"No problem &mdash; I get it, most people like to think things through. I'm the same way."</span></div>
+      <div class="ln"><span class="b">"Just to recap &mdash; you mentioned that if something happened to you, [BENEFICIARY] would be in a really tough spot. Was that accurate?"</span></div>
+      <div class="ln"><span class="b">"So I understand &mdash; is it more that you're unsure about doing this at all&hellip; or do you already know you want it, and it's just a matter of which option makes the most sense?"</span></div>
+      <div class="branch gr"><div class="branch-lbl">Wants it &mdash; deciding on option</div><div class="ln"><span class="g">"That makes sense. Here's what works for a lot of people &mdash; we start at the lower option, just to see what you actually qualify for. You'll hear from me twice: now, and at your annual review a year out. Most important thing is getting something in place today."</span></div></div>
+      <div class="branch rd"><div class="branch-lbl">Unsure about it at all</div><div class="ln"><span class="b">"Totally fair &mdash; what's the piece you'd want to be more sure about? Because you mentioned [BENEFICIARY] would really struggle, and that's the part I don't want to leave unhandled."</span></div></div>
+      <div class="why study-only"><strong>Why it works</strong> The isolation question is the whole game. Until they tell you which objection it is, anything you say is a guess &mdash; reassure a price-worried client about the product and you've wasted your shot. By forcing them to name "doing this at all" vs. "which option," you turn a vague stall into a specific problem, and specific problems close. Recapping the why first quietly reminds them what's at stake before they decide to wait.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag stall">Close Stall</span><span class="obj-trig">"It's too expensive."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> "Expensive" compared to nothing is meaningless &mdash; it only has meaning next to what it prevents. Don't just reassure. Walk four steps that box it down to the number, then solve the number.</div>
+      <div class="say-label">Say</div>
+      <div class="esc">
+        <div class="esc-step"><span class="esc-num">1</span><div><div class="dn">Rule out confusion</div><div class="ln"><span class="g">"Totally get it &mdash; most of my clients felt the same. Before we go on: is everything about how this works clear, or is there a piece you want me to run through again?"</span></div></div></div>
+        <div class="esc-step"><span class="esc-num">2</span><div><div class="dn">Re-confirm the why</div><div class="ln"><span class="g">"Good &mdash; then let's go back to why we're here. We're still making sure [BENEFICIARY] doesn't lose the home if something happened to you. That hasn't changed in the last two minutes, has it?"</span></div></div></div>
+        <div class="esc-step"><span class="esc-num">3</span><div><div class="dn">Isolate to the number</div><div class="ln"><span class="b">"So if it's not about understanding it, and not about whether [BENEFICIARY] matters &mdash; then really, it's just the number. Fair to say?"</span></div></div></div>
+        <div class="esc-step"><span class="esc-num">4</span><div><div class="dn">Solve it &amp; assumptive close</div><div class="ln"><span class="g">"Then here's the good news &mdash; you're in control of that number, not me. We don't have to start where I showed you. Let's get [BENEFICIARY] set up at something that feels easy, not stressful. Something in place beats nothing in place every time &mdash; we agree on that, right?"</span></div><div class="ln"><span class="v">"You want the policy mailed to your home, or emailed to you?"</span></div></div></div>
+      </div>
+      <div class="why study-only"><strong>Why it works</strong> Each step gets a small yes that removes an escape route &mdash; by step 3, the only thing left standing is the number, and a number is solvable when a vague "too expensive" isn't. Starting lower removes the wall (something beats nothing). The final line is an assumptive close: it skips past "do you want it" to "how do you want it delivered," so agreeing to a delivery method <em>is</em> agreeing to buy.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag stall">Close Stall</span><span class="obj-trig">"Do I have to decide today?"</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> Looking for runway to stall. You hold the one-call frame but lower the stakes so "today" feels safe, not pressured.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Yes &mdash; we do submit the original request today. But since most people want a little time to look over their finances, what I'd recommend is starting at the low end with what you know you can afford."</span></div>
+      <div class="ln"><span class="g">"If you want to bump it up, just call or text me, and I do annual reviews with all my clients &mdash; so we'll revisit it a year out anyway."</span></div>
+      <div class="ln"><span class="b">"Anyway &mdash; the address we mail the policy to is [ADDRESS], right?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> You don't break the one-call frame &mdash; "yes, today" &mdash; but you shrink what "today" commits them to. Starting small plus a built-in annual review tells them the decision isn't permanent, which removes the fear driving the stall. Ending on the mailing address is a soft assumptive close that treats the yes as already given.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag stall">Last Resort</span><span class="obj-trig">Still resistant after the full presentation &mdash; the Hail Mary</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> Three things must be true to close: the product makes sense, it fits the budget, they trust you. If they're still stuck, one of those is missing &mdash; this finds which.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"I want to be straight with you &mdash; we've gone through everything, and I want to make sure I'm not missing something. Let me check three things real quick."</span></div>
+      <div class="ln"><span class="g">"One &mdash; the coverage needs to make sense. You said you really liked [OPTION], right?"</span> <span class="cl">"Yes."</span></div>
+      <div class="ln"><span class="g">"Two &mdash; it needs to fit the budget. You mentioned [AMOUNT] might work, which means [LOWER AMOUNT] is even less &mdash; that should work, correct?"</span> <span class="cl">"Yes."</span></div>
+      <div class="ln"><span class="g">"Three &mdash; you have to trust the policy. [CARRIER] is A-rated, 100+ years &mdash; so I'm assuming that's not it. Is there any discomfort with me specifically?"</span> <span class="cl">"No, not at all."</span></div>
+      <div class="ln"><span class="g">"Okay &mdash; so since all three exist&hellip; I'm just curious. What's really going on?"</span></div>
+      <div class="dn">Silence. Stop talking. First to speak loses.</div>
+      <div class="why study-only"><strong>Why it works</strong> You get three yeses that eliminate the three possible reasons to say no &mdash; product, price, trust. Once all three are confirmed, there's logically nothing left to object to, so the final "what's really going on?" plus silence forces out the <em>actual</em> hidden objection, the one they hadn't said. You can't handle what stays hidden; this drags it into the open.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ COVERAGE ============ -->
+<div class="tab-panel" id="tab-coverage">
+  <div class="ph"><div class="ph-ey">Phase 3 &middot; "I'm Already Covered"</div><div class="ph-ti">Coverage &amp; Competition</div><div class="ph-ru">These come from people who think they're already protected. Your job isn't to argue they're wrong &mdash; it's to expose the gap they didn't know was there, so they feel under-informed, never insulted.</div></div>
+  <div class="mode-hint study-only">Study mode. Tap <strong>Call</strong> to strip to just the lines.</div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Coverage</span><span class="obj-trig">"I already have it through work."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They think work coverage has them handled. Two facts dismantle it: it vanishes when the job does, and it almost never pays out. Don't attack it &mdash; expose what they didn't know.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Your work coverage is a great thing to have &mdash; and it's cheap because it's supplemental. But you only have it as long as you work that job. If you leave, retire, or get let go, it disappears."</span></div>
+      <div class="ln"><span class="v">"And here's what most people don't know &mdash; less than 2% of work policies ever actually pay out, because of very specific stipulations. If you're absent from work more than 90 days before you pass, it doesn't have to pay at all."</span></div>
+      <div class="ln"><span class="b">"That's why most of my clients keep the work coverage but also own a private policy. Is that the case for you?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> Praising the work policy first means you're not attacking their decision &mdash; so they don't defend it. Then the two facts (it's tied to the job; the 90-day clause) make them feel under-informed rather than wrong, which is a feeling people fix by listening. "Keep it but also own private" gives them a path that doesn't require admitting a mistake.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Coverage</span><span class="obj-trig">"I already have life insurance."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They have a death-only policy and think it's the same thing. The gap is the living side &mdash; and it's also a flip opportunity if it's overpriced or missing benefits.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"That's smart &mdash; and both pay out when you pass. The reason mortgage protection is stronger is it also covers you on the living side."</span></div>
+      <div class="ln"><span class="v">"You've got an 89% higher chance of becoming sick or disabled than passing away. So &mdash; were you aware your current policy doesn't pay you anything while you're still alive? What happens to the mortgage if you're sick or disabled and can't work for six months?"</span></div>
+      <div class="dn">If it's term without living benefits &mdash; build value on the gap. If overpriced/outdated &mdash; run the flip.</div>
+      <div class="why study-only"><strong>Why it works</strong> You validate the existing policy so they don't dig in, then introduce a category they likely don't have &mdash; living benefits &mdash; backed by a hard stat (89%). The question reframes the risk from "dying" (which feels distant) to "can't work for six months" (which feels real and close). That gap is the wedge, and it's true regardless of what they already own.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Coverage</span><span class="obj-trig">"I have insurance through Allstate / Farmers / State Farm."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They're confusing homeowners insurance with mortgage protection. Don't tell them they're wrong &mdash; ask a question that reveals it.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="b">"Has anyone ever explained the difference between homeowners insurance and mortgage protection to you before?"</span></div>
+      <div class="ln"><span class="g">"Homeowners covers the structure &mdash; fire, storms, a tree through the roof. Mortgage protection covers the loan itself if you become sick, disabled, or pass away. Two completely different things &mdash; and only one keeps your family in the home."</span></div>
+      <div class="why study-only"><strong>Why it works</strong> Leading with a question instead of a correction lets them discover the gap rather than be told &mdash; nobody argues with a conclusion they reached themselves. Framing it as "has anyone explained" implies a gap in their <em>information</em>, not their intelligence, so there's no ego to defend.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Coverage</span><span class="obj-trig">"My family will just help / pay the bills."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They're leaning on family loyalty as a plan. Don't argue with the loyalty &mdash; use it against the objection.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"That's great that you have family like that. But if you really think about it &mdash; would you rather leave them a check&hellip; or a bill?"</span></div>
+      <div class="ln"><span class="pau">let it land</span></div>
+      <div class="why study-only"><strong>Why it works</strong> One sentence reframes their generosity into a burden. It doesn't challenge that family would help &mdash; it accepts it, then asks what they'd be helped <em>with</em>. "Check or a bill" is a clean binary that makes the right answer obvious and the wrong one uncomfortable. Then you stop talking and let the discomfort do the work.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Coverage</span><span class="obj-trig">"Do you have anything cheaper?"</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They're anchoring on price alone, forgetting what they told you mattered. Reframe cheap as a bad trade, then tie back to their own stated priority.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"When you jump out of a plane &mdash; do you want the cheapest parachute, or the best one?"</span></div>
+      <div class="ln"><span class="g">"If you just want cheap, I can absolutely help with that. But you mentioned [LIVING BENEFITS / CASH VALUE] was important to you &mdash; is that still the case?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> The parachute makes "cheapest" feel reckless in a context where the stakes are obvious, then transfers that feeling to insurance. Offering to give them cheap ("I can help with that") removes the pressure &mdash; you're not forcing the expensive option &mdash; while the callback to their own words ("you said X mattered") makes them argue against themselves if they keep pushing price.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Coverage</span><span class="obj-trig">"Just give me a quote / a ballpark."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They're trying to qualify it before investing time. Give a range to neutralize the demand, then pull them back into discovery.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Yeah &mdash; most people I help are somewhere between $40 and $160 a month, depending on age and health. But I don't want to throw you a number that ends up being wrong."</span></div>
+      <div class="ln"><span class="b">"It comes down to how much coverage you need and what you qualify for. Real quick &mdash; if something happened, would you want the house completely paid off, or just the payments covered for a period?"</span></div>
+      <div class="branch bl"><div class="branch-lbl">If they push for an exact number</div><div class="ln"><span class="g">"I hear you &mdash; I just don't want to misquote you. Two quick answers and I'll dial it in way closer. Fair enough?"</span></div></div>
+      <div class="why study-only"><strong>Why it works</strong> A flat refusal to quote feels evasive; a range satisfies the demand enough to lower the wall. "I don't want to misquote you" reframes the discovery questions as <em>protecting them</em> from a wrong number, not stalling. The follow-up question is a soft FI restart &mdash; you've answered their question and slipped right back into yours.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Coverage</span><span class="obj-trig">"Just email or text it to me."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> A soft brush-off &mdash; "send it" usually means "let me off the phone." Agree to send, but make it conditional on two answers, then pull them back to emotion.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Yeah, I can send something &mdash; but so I don't send generic stuff that doesn't fit, let me ask: are you looking mainly to cover your family, or something basic for final expenses?"</span></div>
+      <div class="branch bl"><div class="branch-lbl">If they keep pushing</div><div class="ln"><span class="g">"The only reason I don't just blast quotes is people overpay or get the wrong policy. If something happened &mdash; who'd be the one stuck dealing with everything?"</span></div></div>
+      <div class="branch rd"><div class="branch-lbl">Hard close</div><div class="ln"><span class="g">"Fair enough. Usually when someone asks me to just send info, it's because they're either browsing or they've had a bad experience. Which one is it for you?"</span></div></div>
+      <div class="why study-only"><strong>Why it works</strong> Saying yes removes the fight, but the condition ("so I send the right thing") keeps them on the phone answering questions &mdash; which is the whole goal. The hard close names the two real reasons behind "just send it," forcing them to pick one, and either answer reopens the conversation you were about to lose.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Coverage</span><span class="obj-trig">"I already have an agent."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> Loyalty, or they're mid-process with someone. Don't compete &mdash; earn a second look.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Totally fair &mdash; most people I speak with already have someone. Out of curiosity, what made you start looking into this in the first place?"</span></div>
+      <div class="ln"><span class="b">"That makes sense. Are you just getting a second opinion, or pretty set on moving forward with them?"</span></div>
+      <div class="branch gr"><div class="branch-lbl">Mechanic analogy</div><div class="ln"><span class="g">"I actually recommend all my clients talk to more than one person. It's like getting a car repaired &mdash; you don't go with the first quote, you compare diagnosis and cost. With something this important, you want the best benefits at the lowest cost. Would it hurt to take 10&ndash;15 minutes to make sure it's structured right before you lock anything in?"</span></div></div>
+      <div class="why study-only"><strong>Why it works</strong> Competing with their agent makes you the threat; normalizing a second opinion makes you the safe, smart move. The mechanic analogy reframes shopping around as responsible rather than disloyal, so taking your call doesn't feel like a betrayal of their current agent &mdash; it feels like due diligence.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Coverage</span><span class="obj-trig">"We're planning to sell." / "We already sold it."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They think selling kills the reason for the call. It doesn't &mdash; every path keeps the conversation alive. Never just disposition a sold/moved lead.</div>
+      <div class="say-label">Say</div>
+      <div class="branch gr"><div class="branch-lbl">Planning to sell</div><div class="ln"><span class="g">"Perfect &mdash; this coverage travels with you, it transfers when you buy your next home. Staying local, or moving out of state?"</span></div></div>
+      <div class="branch bl"><div class="branch-lbl">Sold &mdash; bought a new home</div><div class="ln"><span class="g">"That's probably why your file flagged as incomplete. What's the new address? I'll update it for you."</span></div></div>
+      <div class="branch bl"><div class="branch-lbl">Sold &mdash; renting now</div><div class="ln"><span class="g">"Gotcha &mdash; that's why it flagged. We also handle personal life protection that covers you if you become sick, disabled, or pass away &mdash; no home needed. Have you gotten that set up?"</span></div></div>
+      <div class="why study-only"><strong>Why it works</strong> Each branch refuses to accept "sold" as an ending. Coverage travels (so selling is irrelevant), a new home just needs an address update (so you stay in process), and renting pivots off the house entirely to the person &mdash; because they still get sick, still have people depending on them. The objection only ends the call if you let it.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag">Coverage</span><span class="obj-trig">"I've tried before &mdash; I don't qualify."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They were declined by a captive agent with limited carriers. Your 30-carrier access is the differentiator &mdash; and a takeaway reopens the door.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"That's exactly why I'm calling. It sounds like you spoke with someone who had limited carrier access. As a senior underwriter I work with all 30 carriers in [STATE] that handle this."</span></div>
+      <div class="ln"><span class="b">"The only reason you'd flat-out be declined is active cancer &mdash; is that the case for you?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> You reframe the past decline as a limitation of who they talked to, not of them &mdash; so it's not their fault and there's hope. The "only reason is active cancer" line is a takeaway: it raises the bar so high that most people quickly say "no, it's not that," which is them telling you they probably <em>do</em> qualify. The objection becomes the opening.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SPECIALTY ============ -->
+<div class="tab-panel" id="tab-specialty">
+  <div class="ph"><div class="ph-ey">Phase 4 &middot; Niche Pushback</div><div class="ph-ti">Specialty Objections</div><div class="ph-ru">Less frequent, but you need to know them cold &mdash; aged leads skew older and military households are common in Indiana. VA, TSP, disability, savings. Know these and you separate from every captive agent who can't.</div></div>
+  <div class="mode-hint study-only">Study mode. Tap <strong>Call</strong> to strip to just the lines.</div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag spec">Specialty</span><span class="obj-trig">"The VA has me covered." / "I have VGLI."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They're conflating the VA loan guarantee (which protects the bank) with personal coverage. The living-benefits gap is your sharpest angle.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Your VGLI can go up to $400,000 &mdash; but it's not tied to your mortgage balance, and it gets harder to keep as the cost rises with age."</span></div>
+      <div class="ln"><span class="v">"More importantly, VGLI has no critical, chronic, or terminal illness benefits. So if you had cancer, a stroke, a heart attack &mdash; it pays nothing while you're still alive."</span></div>
+      <div class="ln"><span class="g">"And the VA backs the loan for the bank &mdash; it does nothing for your family if something happens. That's exactly why mortgage protection exists separately."</span></div>
+      <div class="why study-only"><strong>Why it works</strong> You honor their service and their VGLI &mdash; never dismiss a veteran's benefits &mdash; then separate two things they've fused: a loan guarantee (bank's protection) and personal coverage (family's protection). The living-benefits gap is the one thing VGLI genuinely doesn't have, so you're not knocking their coverage, you're filling a real hole they didn't know existed.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag spec">Specialty</span><span class="obj-trig">"I have a TSP / pension &mdash; that covers it."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They're treating retirement savings as insurance. Wrong tool &mdash; they'd have to liquidate retirement to cover a gap that shouldn't touch it.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"That's good &mdash; most people I talk to have a TSP. Just so I understand, that's mainly your retirement account, right?"</span></div>
+      <div class="ln"><span class="b">"So it's for building money over time &mdash; not really something your family could immediately use to pay off the house if something happened tomorrow. Correct?"</span></div>
+      <div class="branch bl"><div class="branch-lbl">If "it has a lot in it"</div><div class="ln"><span class="g">"That's a great thing. But if something happened unexpectedly &mdash; would you want your family pulling from your retirement, or would it be better if the house was already handled and that money stayed intact?"</span></div></div>
+      <div class="why study-only"><strong>Why it works</strong> You don't attack the TSP &mdash; you re-categorize it. By getting them to agree it's a retirement account (not instantly liquid, not mortgage-specific), they conclude the gap themselves. The push-back line frames it as protecting their retirement: keep that money intact, let the policy handle the house. It's a win-win, not a trade-off, which is far easier to say yes to.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag spec">Specialty</span><span class="obj-trig">"I have disability coverage."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> Disability replaces income &mdash; it doesn't pay off the house. Different jobs. Expose the seam between them.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"That makes sense &mdash; most employer plans help with income, not the mortgage itself."</span></div>
+      <div class="ln"><span class="b">"Let me ask &mdash; if you couldn't work, does that plan pay 100% of your income <em>and</em> guarantee the house is paid off in its final years?"</span> <span class="cl">(usually no)</span></div>
+      <div class="ln"><span class="g">"So disability handles income &mdash; this handles the mortgage itself. Would you agree those are two different jobs?"</span></div>
+      <div class="why study-only"><strong>Why it works</strong> You concede what disability does well (income) so you're not in a fight, then ask a question whose honest answer is "no" &mdash; revealing the seam. Once they agree income and mortgage are two different jobs, your product isn't competing with their disability plan, it's completing it. Complementary beats competitive every time.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag spec">Specialty</span><span class="obj-trig">"I'm young and healthy &mdash; I don't need it yet."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> They think health is a reason to wait. It's the exact opposite &mdash; health is the qualifier, and it's a closing window.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Honestly &mdash; that's exactly who qualifies for the best coverage."</span> <span class="pau">pause</span></div>
+      <div class="ln"><span class="g">"Being healthy is the reason to do it now, not the reason to wait. The healthiest people get the best plans &mdash; the sickest get the most expensive ones. Most people who end up paying double were healthy when they first thought about it."</span></div>
+      <div class="why study-only"><strong>Why it works</strong> It inverts their own logic against them: the very thing they're using to delay (good health) is the thing that's expiring. "Locked in today" plus "paying double later" creates a closing window &mdash; the cost of waiting becomes concrete and personal, so doing nothing stops feeling free.</div>
+    </div>
+  </div>
+
+  <div class="obj"><div class="obj-head"><span class="obj-tag spec">Specialty</span><span class="obj-trig">"I can't afford it."</span></div>
+    <div class="obj-body">
+      <div class="read study-only"><strong>What's really happening</strong> Could be real budget, could be reflex. Reframe the true cost &mdash; the expensive option is doing nothing.</div>
+      <div class="say-label">Say</div>
+      <div class="ln"><span class="g">"Can I put something in perspective? Would you rather your family be left paying more bills &mdash; or would you rather figure out a way to handle this now so they don't have to?"</span></div>
+      <div class="dn">Then drop to a smaller starting option &mdash; something in place beats nothing.</div>
+      <div class="why study-only"><strong>Why it works</strong> "Can't afford it" only compares the premium to zero. This reframes the comparison to what their family pays if nothing's in place &mdash; making <em>doing nothing</em> the expensive choice. Then offering a smaller option removes the budget wall without abandoning the close: you're not asking them to afford the big plan, just to not leave their family with nothing.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ QUICK GRID ============ -->
+<div class="tab-panel" id="tab-cheat">
+  <div class="ph"><div class="ph-ey">Live Reference</div><div class="ph-ti">Quick Grid</div><div class="ph-ru">One-glance version for when you're mid-call and just need the line. The depth lives in the other tabs &mdash; this is the cliff notes once you've studied it.</div></div>
+  <div class="otw"><table class="ot">
+    <thead><tr><th>Objection</th><th>The Move</th><th>Core Line</th></tr></thead>
+    <tbody>
+      <tr><td>Not interested</td><td>Acknowledge &rarr; redirect &rarr; narrow to price/qualify</td><td>"More concerned the price is too high, or that you might not qualify?"</td></tr>
+      <tr><td>Don't remember</td><td>Defuse with humor, re-anchor the file</td><td>"If you're anything like me I can't remember breakfast&hellip; your property showed up when the lender processed the loan."</td></tr>
+      <tr><td>Took care at closing</td><td>Agree, separate with 2008 change</td><td>"That was the mortgage &mdash; I'm calling about the protection. You're the beneficiary, not the bank."</td></tr>
+      <tr><td>No lender anymore</td><td>Make it your reason for calling</td><td>"That's exactly why it's still pending. The address on file is [ADDRESS]?"</td></tr>
+      <tr><td>What company</td><td>Specificity = legitimacy</td><td>"Independent, top 30 A-rated carriers &mdash; Mutual of Omaha, Transamerica."</td></tr>
+      <tr><td>Take me off the list</td><td>Destroy the spam frame</td><td>"There is no list &mdash; this is the request you submitted."</td></tr>
+      <tr><td>Sounds like a scam</td><td>Don't defend, offer to verify</td><td>"I can verify my license through the state right now."</td></tr>
+      <tr><td>Is it required</td><td>Act confused, analogy</td><td>"It's like driving a car without insurance."</td></tr>
+      <tr><td>Busy / driving</td><td>Match pace, get pen / pull over</td><td>"I'm busy too &mdash; grab something to write with."</td></tr>
+      <tr><td>Saw an ad</td><td>Clarify, let them self-select</td><td>"Accidental-only, or any cause of death?"</td></tr>
+      <tr><td>Think about it</td><td>ISOLATE: at all, or which option?</td><td>"Unsure about doing this at all &mdash; or just which option?"</td></tr>
+      <tr><td>Too expensive</td><td>4-step &rarr; isolate to number &rarr; assumptive close</td><td>"Mailed to your home, or emailed to you?"</td></tr>
+      <tr><td>Decide today?</td><td>Hold the frame, shrink the stakes</td><td>"Yes &mdash; but start low, we adjust at your annual review."</td></tr>
+      <tr><td>Through work</td><td>Praise it, expose the gap</td><td>"Gone the day you leave the job &mdash; less than 2% ever pay out."</td></tr>
+      <tr><td>Already have life ins.</td><td>Living-benefits gap</td><td>"Does it pay you anything while you're alive? 89% more likely to get sick than die."</td></tr>
+      <tr><td>Homeowners (Allstate)</td><td>Ask, don't correct</td><td>"Has anyone explained the difference between homeowners and mortgage protection?"</td></tr>
+      <tr><td>Family will help</td><td>Reframe generosity</td><td>"Leave them a check &mdash; or a bill?"</td></tr>
+      <tr><td>Anything cheaper</td><td>Parachute, tie to their why</td><td>"Cheapest parachute or the best one?"</td></tr>
+      <tr><td>Just give a quote</td><td>Range, then back to FI</td><td>"$40&ndash;$160 depending on age and health &mdash; full payoff or just the payments?"</td></tr>
+      <tr><td>Just send it</td><td>Conditional yes &rarr; back to emotion</td><td>"Browsing, or had a bad experience? Which is it?"</td></tr>
+      <tr><td>Already have agent</td><td>Mechanic analogy, second opinion</td><td>"You don't take the first quote on a car repair."</td></tr>
+      <tr><td>Selling / sold</td><td>Travels / update address / pivot to personal</td><td>"This coverage travels with you."</td></tr>
+      <tr><td>Don't qualify</td><td>Limited-carrier reframe + takeaway</td><td>"Only reason you'd be declined is active cancer &mdash; is that the case?"</td></tr>
+      <tr><td>VA / VGLI</td><td>Loan guarantee &ne; coverage; living gap</td><td>"VGLI pays nothing while you're alive."</td></tr>
+      <tr><td>TSP / pension</td><td>Re-categorize as retirement</td><td>"Pull from retirement, or have the house already handled?"</td></tr>
+      <tr><td>Disability</td><td>Income vs. mortgage = two jobs</td><td>"Disability handles income &mdash; this handles the mortgage."</td></tr>
+      <tr><td>Young &amp; healthy</td><td>Invert: health is the window</td><td>"That's exactly who qualifies for the best coverage."</td></tr>
+      <tr><td>Can't afford it</td><td>Doing nothing is the expensive choice</td><td>"Rather your family pay more bills, or handle it now?"</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+</div>
+<script>
+  function showTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector('[onclick="showTab(\'' + id + '\')"]');
+    if (btn) btn.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function setMode(mode) {
+    document.body.className = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[onclick="setMode(\'' + mode + '\')"]').classList.add('active');
+  }
+</script>
+</body>
+</html>
